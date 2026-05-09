@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Intervue | Spoken Mock Interview App Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="navbar" aria-label="Main navigation">
+      <a class="brand" href="#home" aria-label="Intervue home">
+        <span>IV</span>
+        Intervue
+      </a>
+      <button class="menu-btn" type="button" aria-label="Toggle menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+      </button>
+      <div class="nav-links">
+        <a href="#setup">Setup</a>
+        <a href="#interview">Interview</a>
+        <a href="#analysis">Analysis</a>
+        <a href="#report">Report</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section id="home" class="hero section">
+      <div class="hero-copy reveal">
+        <p class="eyebrow">Spoken mock interview app</p>
+        <h1>Practice interviews like a real conversation.</h1>
+        <p class="hero-text">
+          Intervue runs session-based mock interviews with role targeting, resume context, voice answers, live transcription, AI-generated follow-up questions, and evidence-based final reports.
+        </p>
+        <div class="hero-actions" aria-label="Page shortcuts">
+          <a class="btn primary" href="#interview">Preview Interview</a>
+          <a class="btn secondary" href="#report">View Report</a>
+        </div>
+      </div>
+
+      <section class="app-preview hero-preview reveal delay-1" aria-label="Static Intervue interview session preview">
+        <div class="preview-topbar">
+          <div class="window-dots" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <strong>Session INT-204</strong>
+          <span class="session-state">Live practice</span>
+        </div>
+
+        <div class="preview-body">
+          <aside class="session-sidebar">
+            <div class="mini-profile">
+              <span class="avatar">AK</span>
+              <div>
+                <strong>Backend Developer</strong>
+                <p>3-5 years</p>
+              </div>
+            </div>
+            <div class="phase-list" aria-label="Interview phases">
+              <span class="done">Intro</span>
+              <span class="active">Technical depth</span>
+              <span>Behavioral</span>
+              <span>Wrap-up</span>
+            </div>
+            <div class="context-card compact-card">
+              <small>Resume context</small>
+              <p>Node.js, MongoDB, API design, testing, cloud basics</p>
+            </div>
+          </aside>
+
+          <section class="voice-room">
+            <div class="interviewer-card">
+              <span class="card-label">AI Interviewer</span>
+              <h2>Tell me about a backend API you designed and how you handled failure cases.</h2>
+              <p>Generated from role, experience level, recent answers, active phase, and resume context.</p>
+            </div>
+
+            <div class="voice-panel">
+              <div class="mic-status">
+                <span class="mic-icon" aria-hidden="true"></span>
+                <div>
+                  <strong>Candidate speaking</strong>
+                  <p>Browser voice answer captured for transcription</p>
+                </div>
+              </div>
+              <div class="waveform" aria-label="Voice waveform visualization">
+                <span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span>
+              </div>
+            </div>
+          </section>
+
+          <aside class="transcript-panel">
+            <div class="panel-heading">
+              <span class="card-label">Transcript</span>
+              <strong>Deepgram</strong>
+            </div>
+            <div class="chat-bubble interviewer">Can you explain the tradeoff you made?</div>
+            <div class="chat-bubble candidate">I used a retry queue for temporary failures and separated validation errors from service errors.</div>
+            <div class="analysis-chip">Answer analysis queued</div>
+          </aside>
+        </div>
+      </section>
+    </section>
+
+    <section class="workflow section" aria-label="Full interview workflow">
+      <div class="section-heading reveal">
+        <p class="eyebrow">Complete flow</p>
+        <h2>From session setup to final evidence-backed evaluation.</h2>
+      </div>
+
+      <div class="workflow-grid">
+        <article class="workflow-card reveal">
+          <span>01</span>
+          <h3>Choose target role</h3>
+          <p>Select Software Engineer, Data Scientist, Product Manager, Frontend, Backend, Full Stack, ML, or DevOps.</p>
+        </article>
+        <article class="workflow-card reveal delay-1">
+          <span>02</span>
+          <h3>Set experience level</h3>
+          <p>Tune questions for Fresher, 1-2 years, 3-5 years, or 5+ years of experience.</p>
+        </article>
+        <article class="workflow-card reveal delay-2">
+          <span>03</span>
+          <h3>Add resume context</h3>
+          <p>Use parsed resume details to make prompts more relevant to the candidate background.</p>
+        </article>
+        <article class="workflow-card reveal">
+          <span>04</span>
+          <h3>Answer by voice</h3>
+          <p>Run a chat-style interview where the candidate speaks answers directly in the browser.</p>
+        </article>
+        <article class="workflow-card reveal delay-1">
+          <span>05</span>
+          <h3>Generate next prompt</h3>
+          <p>Use interview phase, role, level, history, and resume context to shape the next question.</p>
+        </article>
+        <article class="workflow-card reveal delay-2">
+          <span>06</span>
+          <h3>Review final report</h3>
+          <p>Show score, strengths, weaknesses, recommendations, speech evidence, and question reviews.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="setup" class="section setup-section">
+      <div class="section-heading reveal">
+        <p class="eyebrow">Session setup</p>
+        <h2>Start with role, level, and optional resume context.</h2>
+      </div>
+
+      <div class="setup-grid">
+        <article class="setup-panel reveal">
+          <div class="panel-heading">
+            <span class="card-label">Target role</span>
+            <strong>8 options</strong>
+          </div>
+          <div class="role-grid">
+            <span>Software Engineer</span>
+            <span>Data Scientist</span>
+            <span>Product Manager</span>
+            <span>Frontend Developer</span>
+            <span class="selected">Backend Developer</span>
+            <span>Full Stack Developer</span>
+            <span>Machine Learning Engineer</span>
+            <span>DevOps Engineer</span>
+          </div>
+        </article>
+
+        <article class="setup-panel reveal delay-1">
+          <div class="panel-heading">
+            <span class="card-label">Experience level</span>
+            <strong>Adaptive</strong>
+          </div>
+          <div class="level-stack">
+            <div><span>Fresher</span><small>Fundamentals and confidence</small></div>
+            <div><span>1-2 years</span><small>Project depth and basics</small></div>
+            <div class="current"><span>3-5 years</span><small>System reasoning and tradeoffs</small></div>
+            <div><span>5+ years</span><small>Leadership and architecture</small></div>
+          </div>
+        </article>
+
+        <article class="setup-panel resume-card reveal delay-2">
+          <div class="panel-heading">
+            <span class="card-label">Resume upload</span>
+            <strong>Optional</strong>
+          </div>
+          <div class="resume-preview">
+            <div class="file-icon">PDF</div>
+            <div>
+              <h3>resume-akash.pdf</h3>
+              <p>Parsed profile, skills, projects, and recent experience are attached to the session.</p>
+            </div>
+          </div>
+          <div class="skill-tags">
+            <span>Express</span>
+            <span>MongoDB</span>
+            <span>Auth</span>
+            <span>System Design</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="interview" class="section interview-section">
+      <div class="section-heading reveal">
+        <p class="eyebrow">Live voice interview</p>
+        <h2>A conversation-first interview room.</h2>
+      </div>
+
+      <div class="interview-dashboard reveal">
+        <div class="dashboard-main">
+          <div class="timeline-card">
+            <div class="panel-heading">
+              <span class="card-label">Active phase</span>
+              <strong>Technical depth</strong>
+            </div>
+            <div class="timeline">
+              <div class="complete"><span></span>Warm introduction</div>
+              <div class="current"><span></span>Role-specific technical question</div>
+              <div><span></span>Behavioral follow-up</div>
+              <div><span></span>Closing summary</div>
+            </div>
+          </div>
+
+          <div class="question-card">
+            <span class="card-label">Groq-generated prompt</span>
+            <h3>How would you design a reliable job queue for sending interview report emails?</h3>
+            <p>The prompt adapts to the current phase, recent answer history, selected backend role, experience level, and resume context.</p>
+          </div>
+        </div>
+
+        <aside class="voice-stack">
+          <div class="status-card recording-card">
+            <span class="record-dot"></span>
+            <div>
+              <strong>Voice answer in progress</strong>
+              <p>Candidate response is represented as a static preview.</p>
+            </div>
+          </div>
+          <div class="status-card">
+            <span class="status-icon">DG</span>
+            <div>
+              <strong>Speech to text</strong>
+              <p>Transcription appears beside each answer for review.</p>
+            </div>
+          </div>
+          <div class="status-card">
+            <span class="status-icon">TTS</span>
+            <div>
+              <strong>Voice playback</strong>
+              <p>Interviewer prompts can be spoken aloud with Edge TTS.</p>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="analysis" class="section analysis-section">
+      <div class="section-heading reveal">
+        <p class="eyebrow">Answer intelligence</p>
+        <h2>Each answer becomes structured interview evidence.</h2>
+      </div>
+
+      <div class="analysis-grid">
+        <article class="analysis-card reveal">
+          <div class="analysis-score">8.2</div>
+          <h3>Technical Quality</h3>
+          <p>Checks correctness, depth, clarity of tradeoffs, architecture thinking, and role-specific detail.</p>
+          <div class="meter"><span style="width: 82%"></span></div>
+        </article>
+        <article class="analysis-card reveal delay-1">
+          <div class="analysis-score">7.6</div>
+          <h3>Behavioral Signals</h3>
+          <p>Highlights ownership, communication, collaboration, decision-making, and examples from experience.</p>
+          <div class="meter"><span style="width: 76%"></span></div>
+        </article>
+        <article class="analysis-card reveal delay-2">
+          <div class="analysis-score">7.9</div>
+          <h3>Speech Heuristics</h3>
+          <p>Surfaces answer length, pacing, filler patterns, confidence signals, and transcript-backed observations.</p>
+          <div class="meter"><span style="width: 79%"></span></div>
+        </article>
+      </div>
+
+      <div class="evidence-panel reveal">
+        <div class="panel-heading">
+          <span class="card-label">Transcript evidence</span>
+          <strong>Per-answer review</strong>
+        </div>
+        <div class="evidence-grid">
+          <div>
+            <small>Question</small>
+            <p>Describe a backend failure you handled in production.</p>
+          </div>
+          <div>
+            <small>Observed strength</small>
+            <p>Separated retryable failures from validation failures and explained monitoring clearly.</p>
+          </div>
+          <div>
+            <small>Improvement note</small>
+            <p>Add concrete metrics and mention rollback strategy earlier in the answer.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="report" class="section report-section">
+      <div class="section-heading reveal">
+        <p class="eyebrow">Final report</p>
+        <h2>Evidence-based interview results after the session ends.</h2>
+      </div>
+
+      <div class="report-preview reveal">
+        <aside class="score-summary">
+          <span class="card-label">Overall score</span>
+          <strong>82</strong>
+          <p>Strong backend readiness with clear communication and practical tradeoff awareness.</p>
+        </aside>
+
+        <section class="report-details">
+          <div class="report-columns">
+            <div class="report-box strengths">
+              <h3>Strengths</h3>
+              <ul>
+                <li>Explains API design decisions clearly.</li>
+                <li>Uses concrete examples from past work.</li>
+                <li>Understands reliability and observability tradeoffs.</li>
+              </ul>
+            </div>
+            <div class="report-box weaknesses">
+              <h3>Weaknesses</h3>
+              <ul>
+                <li>Could quantify impact with stronger metrics.</li>
+                <li>Sometimes answers before framing assumptions.</li>
+                <li>Needs sharper security examples for senior rounds.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="question-review">
+            <div class="review-row header-row">
+              <span>Question</span>
+              <span>Focus</span>
+              <span>Score</span>
+            </div>
+            <div class="review-row">
+              <span>API failure handling</span>
+              <span>Reliability</span>
+              <strong>8.5</strong>
+            </div>
+            <div class="review-row">
+              <span>Queue design</span>
+              <span>Architecture</span>
+              <strong>8.0</strong>
+            </div>
+            <div class="review-row">
+              <span>Team conflict example</span>
+              <span>Behavioral</span>
+              <strong>7.7</strong>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Intervue app preview for spoken mock interview sessions.</p>
+    <a href="#home">Back to top</a>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
