@@ -24,7 +24,15 @@ app.use("/api/auth",authRoutes)
 const proRoutes=require("./routes/problemRoutes")
 app.use("/api/problems",problemRoutes)
 
+// Submission Routes
+const submissionRoutes = require(
+    "./routes/submissionRoutes"
+)
 
+app.use(
+    "/api/submissions",
+    submissionRoutes
+)
 
 
 
