@@ -26,6 +26,13 @@ const UserSchema = new mongoose.Schema({
         enum: ["Admin", "User"],
         default: "User"
     },
+    profilePic: {
+    type: String
+},
+
+cloudinary_id: {
+    type: String
+},
 
     // TARGET JOB ROLE
 

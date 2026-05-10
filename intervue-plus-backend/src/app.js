@@ -29,11 +29,20 @@ const submissionRoutes = require(
     "./routes/submissionRoutes"
 )
 
+// Profile Routes Cloudinary upload
+const userRoutes = require("./routes/userRoutes")
+app.use("/api/users", userRoutes)
+
+
 app.use(
     "/api/submissions",
     submissionRoutes
 )
 
+
+// Resume Routes
+const resumeRoutes = require("./routes/resumeRoutes")
+app.use("/api/resume", resumeRoutes)
 
 
 
