@@ -21,7 +21,7 @@ app.use("/api/auth",authRoutes)
 
 //ProblemRoutes
 
-const proRoutes=require("./routes/problemRoutes")
+const problemRoutes=require("./routes/problemRoutes")
 app.use("/api/problems",problemRoutes)
 
 // Submission Routes

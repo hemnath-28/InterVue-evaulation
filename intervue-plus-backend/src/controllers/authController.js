@@ -1,6 +1,6 @@
-const User = require("./models/User")
-const bcrypt = require("bcrypt")
-const gentoken = require("./utils/generateToken")
+const User = require("../models/User")
+const bcrypt = require("bcryptjs")
+const gentoken = require("../utils/generateToken")
 
 
 // Register User

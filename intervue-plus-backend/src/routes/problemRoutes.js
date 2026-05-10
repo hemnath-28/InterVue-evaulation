@@ -1,5 +1,5 @@
 const express=require('express')
-const problemroute=express.problemroute()
+const problemroute=express.Router()
 const {
 
     createProblem,

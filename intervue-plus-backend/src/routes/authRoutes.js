@@ -1,8 +1,8 @@
 const express=require('express')
 const UserRoute=express.Router()
-const protect=require('./middleware/Authmiddleware')
+const protect=require('../middleware/Authmiddleware')
 
-const {registerUser,loginUser,getProfile}=require("./controllers/authController")
+const {registerUser,loginUser,getProfile}=require("../controllers/authController")
 
 
 // /api/auth/login

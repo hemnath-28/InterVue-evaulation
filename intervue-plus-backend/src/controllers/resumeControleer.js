@@ -13,6 +13,18 @@ const uploadResume = async (req, res) => {
             })
         }
 
+        if (!process.env.AFFINDA_WORKSPACE) {
+            return res.status(500).json({
+                message: "AFFINDA_WORKSPACE is missing"
+            })
+        }
+
+        if (!process.env.AFFINDA_DOCUMENT_TYPE) {
+            return res.status(500).json({
+                message: "AFFINDA_DOCUMENT_TYPE is missing"
+            })
+        }
+
         // CREATE FORM DATA
 
         const formData = new FormData()
@@ -22,6 +34,18 @@ const uploadResume = async (req, res) => {
             req.file.buffer,
             req.file.originalname
         )
+
+        formData.append(
+            "workspace",
+            process.env.AFFINDA_WORKSPACE
+        )
+
+        formData.append(
+            "documentType",
+            process.env.AFFINDA_DOCUMENT_TYPE
+        )
+
+        formData.append("wait", "true")
 
         // SEND TO AFFINDA
 
@@ -41,10 +65,28 @@ const uploadResume = async (req, res) => {
                 }
             }
         )
+// LOG full response
+        console.log(
+            JSON.stringify(response.data, null, 2)
+        )
 
         // AFFINDA DATA
 
-        const data = response.data.data
+        const data = response.data.data || {}
+        const meta = response.data.meta || {}
+
+        if (Object.keys(data).length === 0) {
+            return res.status(422).json({
+                message: "Affinda uploaded the file but returned no parsed resume data",
+                document: {
+                    identifier: meta.identifier,
+                    reviewUrl: meta.reviewUrl,
+                    workspace: meta.workspace,
+                    documentType: meta.documentType,
+                    extractor: response.data.extractor
+                }
+            })
+        }
 
         // EXTRACT SKILLS
 
@@ -76,8 +118,6 @@ const uploadResume = async (req, res) => {
 
         const resume = await Resume.create({
 
-            user: req.user._id,
-
             name: data.name?.raw || "",
 
             email: data.emails?.[0] || "",
@@ -90,7 +130,9 @@ const uploadResume = async (req, res) => {
 
             certifications: [],
 
-            achievements: []
+            achievements: [],
+
+            resumeUrl: meta.file || meta.pdf || ""
         })
 
         res.status(201).json({

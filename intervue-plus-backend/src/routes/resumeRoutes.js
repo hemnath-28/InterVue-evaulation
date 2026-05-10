@@ -1,20 +1,17 @@
 const express = require("express")
+const multer = require("multer")
 
 const router = express.Router()
 
-const upload = require("../middleware/upload")
+const upload = multer({ storage: multer.memoryStorage() })
 
 const {
     uploadResume
-} = require("../controllers/resumeController")
-
-const protect = require("../middleware/authMiddleware")
+} = require("../controllers/resumeControleer")
 
 router.post(
 
     "/upload",
-
-    protect,
 
     upload.single("resume"),
 
