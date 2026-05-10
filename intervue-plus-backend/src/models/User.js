@@ -27,9 +27,54 @@ const UserSchema = new mongoose.Schema({
         default: "User"
     },
 
-    skills: [{
-        type: String
-    }]
+    // TARGET JOB ROLE
+
+    targetRole: {
+        type: String,
+
+        enum: [
+
+            "Frontend Developer",
+
+            "Backend Developer",
+
+            "Full Stack Developer",
+
+            "Node.js Developer",
+
+            "React Developer",
+
+            "AI Engineer",
+
+            "DevOps Engineer",
+
+            "Data Engineer",
+
+            "Mobile App Developer"
+
+        ]
+    },
+
+    // EXPERIENCE LEVEL
+
+    experienceLevel: {
+
+        type: String,
+
+        enum: [
+
+            "Fresher",
+
+            "Junior",
+
+            "Mid",
+
+            "Senior"
+
+        ],
+
+        default: "Fresher"
+    }
 
 }, {
     timestamps: true

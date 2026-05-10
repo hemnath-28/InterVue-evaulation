@@ -13,9 +13,45 @@ const ProblemSchema = new mongoose.Schema({
         required: true
     },
 
-    difficulty: {
+    // DSA / Backend / Frontend
+
+    topic: {
+
         type: String,
+
+        enum: [
+
+            "DSA",
+
+            "Backend",
+
+            "Frontend",
+
+            "Database",
+
+            "System Design",
+
+            "Operating System",
+
+            "Networking",
+
+            "JavaScript",
+
+            "React",
+
+            "Node.js"
+
+        ],
+
+        required: true
+    },
+
+    difficulty: {
+
+        type: String,
+
         enum: ["Easy", "Medium", "Hard"],
+
         required: true
     },
 
@@ -23,30 +59,35 @@ const ProblemSchema = new mongoose.Schema({
         type: String
     }],
 
-    examples: [{
-        input: String,
-        output: String,
-        explanation: String
-    }],
-
     constraints: [{
         type: String
     }],
 
-    visibleTestCases: [{
+    examples: [{
+
         input: String,
+
+        output: String,
+
+        explanation: String
+
+    }],
+
+    visibleTestCases: [{
+
+        input: String,
+
         expectedOutput: String
+
     }],
 
     hiddenTestCases: [{
-        input: String,
-        expectedOutput: String
-    }],
 
-    createdBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User"
-    }
+        input: String,
+
+        expectedOutput: String
+
+    }]
 
 }, {
     timestamps: true

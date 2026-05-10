@@ -2,60 +2,232 @@ const mongoose = require("mongoose")
 
 const InterviewSessionSchema = new mongoose.Schema({
 
+    // USER ATTENDING INTERVIEW
+
     user: {
+
         type: mongoose.Schema.Types.ObjectId,
+
         ref: "User",
+
         required: true
     },
 
-    overallScore: {
-        type: Number,
-        default: 0
+    // TARGET JOB ROLE
+
+    targetRole: {
+
+        type: String,
+
+        enum: [
+
+            "Frontend Developer",
+
+            "Backend Developer",
+
+            "Full Stack Developer",
+
+            "Node.js Developer",
+
+            "React Developer",
+
+            "AI Engineer",
+
+            "DevOps Engineer",
+
+            "Data Engineer",
+
+            "Mobile App Developer"
+
+        ],
+
+        required: true
     },
 
-    status: {
+    // EXPERIENCE LEVEL
+
+    experienceLevel: {
+
         type: String,
-        enum: ["Started", "Completed"],
+
+        enum: [
+
+            "Fresher",
+
+            "Junior",
+
+            "Mid",
+
+            "Senior"
+
+        ],
+
+        required: true
+    },
+
+    // OVERALL STATUS
+
+    status: {
+
+        type: String,
+
+        enum: [
+
+            "Started",
+
+            "In Progress",
+
+            "Completed",
+
+            "Cancelled"
+
+        ],
+
         default: "Started"
     },
 
+    // OVERALL INTERVIEW SCORE
+
+    overallScore: {
+
+        type: Number,
+
+        default: 0
+    },
+
+    // AI FINAL FEEDBACK
+
+    overallFeedback: {
+
+        type: String
+    },
+
+    // INTERVIEW ROUNDS
+
     rounds: [{
 
+        // ROUND TYPE
+
         roundType: {
+
             type: String,
+
             enum: [
-                "Technical",
-                "Behavioral",
-                "Coding",
+
+                "Introduction",
+
                 "Resume",
-                "Situational",
-                "HR"
+
+                "Technical",
+
+                "Coding",
+
+                "Behavioral",
+
+                "Situational"
+
+            ],
+
+            required: true
+        },
+
+        // ROUND DIFFICULTY
+
+        difficulty: {
+
+            type: String,
+
+            enum: [
+
+                "Easy",
+
+                "Medium",
+
+                "Hard"
+
             ]
         },
 
-        score: {
-            type: Number,
-            default: 0
-        },
+        // QUESTIONS ASKED
 
-        feedback: {
-            type: String
-        },
+        questions: [{
 
-        startedAt: {
-            type: Date,
-            default: Date.now
-        },
+            questionText: {
+                type: String
+            },
 
-        endedAt: {
-            type: Date
-        },
+            topic: {
+
+                type: String,
+
+                enum: [
+
+                    "DSA",
+
+                    "Backend",
+
+                    "Frontend",
+
+                    "Database",
+
+                    "Operating System",
+
+                    "Networking",
+
+                    "JavaScript",
+
+                    "React",
+
+                    "Node.js",
+
+                    "System Design",
+
+                    "Behavioral"
+
+                ]
+            },
+
+            difficulty: {
+
+                type: String,
+
+                enum: [
+
+                    "Easy",
+
+                    "Medium",
+
+                    "Hard"
+
+                ]
+            }
+
+        }],
+
+        // CODING PROBLEMS
+
+        problems: [{
+
+            type: mongoose.Schema.Types.ObjectId,
+
+            ref: "Problem"
+        }],
+
+        // CHAT / CONVERSATION
 
         messages: [{
 
             sender: {
+
                 type: String,
-                enum: ["AI", "User"]
+
+                enum: [
+
+                    "AI",
+
+                    "User"
+
+                ]
             },
 
             text: {
@@ -63,20 +235,90 @@ const InterviewSessionSchema = new mongoose.Schema({
             },
 
             timestamp: {
+
                 type: Date,
+
                 default: Date.now
             }
 
-        }]
+        }],
 
-    }]
+        // ROUND SCORE
+
+        score: {
+
+            type: Number,
+
+            default: 0
+        },
+
+        // AI FEEDBACK
+
+        feedback: {
+
+            type: String
+        },
+
+        // ROUND STATUS
+
+        status: {
+
+            type: String,
+
+            enum: [
+
+                "Pending",
+
+                "Started",
+
+                "Completed"
+
+            ],
+
+            default: "Pending"
+        },
+
+        // ROUND TIMINGS
+
+        startedAt: {
+
+            type: Date
+        },
+
+        endedAt: {
+
+            type: Date
+        }
+
+    }],
+
+    // FINAL RESULT
+
+    result: {
+
+        type: String,
+
+        enum: [
+
+            "Pass",
+
+            "Fail",
+
+            "Pending"
+
+        ],
+
+        default: "Pending"
+    }
 
 }, {
     timestamps: true
 })
 
 const InterviewSession = mongoose.model(
+
     "InterviewSession",
+
     InterviewSessionSchema
 )
 

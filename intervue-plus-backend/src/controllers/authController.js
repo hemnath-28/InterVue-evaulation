@@ -1,6 +1,7 @@
-const User = require("../models/User")
+const User = require("./models/User")
 const bcrypt = require("bcrypt")
-const gentoken = require("../utils/generateToken")
+const gentoken = require("./utils/generateToken")
+
 
 // Register User
 const registerUser = async (req, res) => {
@@ -116,9 +117,18 @@ const loginUser = async (req, res) => {
         })
     }
 }
+const getProfile = async (req, res) => {
 
+    res.status(200).json({
+
+        message: "Profile fetched",
+
+        user: req.user
+
+    })
+}
 
 module.exports = {
     registerUser,
-    loginUser
+    loginUser,getProfile
 }
