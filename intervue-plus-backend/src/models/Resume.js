@@ -2,8 +2,6 @@ const mongoose = require("mongoose")
 
 const resumeSchema = new mongoose.Schema({
 
-    
-
     name: {
         type: String
     },
@@ -18,20 +16,29 @@ const resumeSchema = new mongoose.Schema({
         }
     ],
 
-    projects: [
-        {
-            name: String,
-            description: String,
-            technologies: [String]
-        }
-    ],
-
     experience: [
         {
             company: String,
             role: String,
             duration: String,
             description: String
+        }
+    ],
+
+    education: [
+        {
+            institution: String,
+            degree: String,
+            field: String,
+            year: String
+        }
+    ],
+
+    projects: [
+        {
+            name: String,
+            description: String,
+            technologies: [String]
         }
     ],
 
