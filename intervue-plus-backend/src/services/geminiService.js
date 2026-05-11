@@ -66,7 +66,7 @@ Required output format:
 Rules:
 - If a field has no data, use an empty string "" or empty array [] as appropriate
 - Do NOT invent data that isn't present in the raw input
-- Extract ALL skills mentioned anywhere in the resume
+- Extract ALL skills mentioned anywhere in the resume 
 - For experience duration, use the raw text dates if available (e.g. "Jan 2022 - Mar 2023")
 - For education year, use graduation year or date range
 - Achievements can include awards, honors, rankings, hackathon wins, publications, etc.

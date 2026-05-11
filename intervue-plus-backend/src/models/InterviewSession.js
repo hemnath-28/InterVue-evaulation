@@ -21,23 +21,24 @@ const InterviewSessionSchema = new mongoose.Schema({
 
         enum: [
 
-            "Frontend Developer",
-
-            "Backend Developer",
-
-            "Full Stack Developer",
-
-            "Node.js Developer",
-
-            "React Developer",
-
-            "AI Engineer",
-
-            "DevOps Engineer",
-
-            "Data Engineer",
-
-            "Mobile App Developer"
+        "Frontend Developer",
+        "Backend Developer",
+        "Full Stack Developer",
+        "Node.js Developer",
+        "React Developer",
+        "Mobile App Developer", 
+        "iOS Developer",        
+        "Android Developer",   
+        "AI Engineer",
+        "Machine Learning Engineer",
+        "Data Engineer",
+        "Data Scientist",
+        "DevOps Engineer",
+        "Cloud Engineer",
+        "Security Engineer",
+        "QA Automation Engineer",
+        "Embedded Systems Engineer",
+        "UI/UX Designer"
 
         ],
 

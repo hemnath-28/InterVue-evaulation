@@ -239,3 +239,46 @@ Built for learning advanced backend engineering concepts.
 # 📜 License
 
 This project is for educational purposes.
+
+
+Beyond the specific tools you mentioned, there are several competitive alternatives for both transcription (STT) and text-to-speech (TTS) in 2026. These range from established cloud APIs with recurring free tiers to fully open-source models for unlimited use.
+
+1. Transcription (Speech-to-Text) Alternatives
+If you need high-speed transcription similar to Deepgram Nova-2, these platforms offer diverse free options:
+
+OpenAI Whisper: Considered the industry standard for multilingual accuracy.
+
+Free Option: You can run the Whisper model locally for free if you have a GPU, giving you unlimited transcription without any API costs.
+
+Paid API: For those who prefer the API, it costs approximately $0.006 per minute.
+
+Deepgram Nova-3: The successor to the model you listed, optimized for even lower latency and higher scalability.
+
+Free Tier: Offers 200 minutes per month for testing and small projects.
+
+AssemblyAI: A feature-rich alternative that provides more than just text, including summarization and sentiment analysis.
+
+Pricing: Competitive at roughly $0.65 per audio hour.
+
+Otter.ai: Best for live meetings; it includes a free basic version with limited monthly minutes for transcribing Zoom, Teams, or Google Meet calls.
+
+YouTube: A "hidden" free alternative. If you upload a video, YouTube generates automatic captions for free, which can be downloaded as a rough transcript.
+
+2. Text-to-Speech (TTS) Alternatives
+While edge-tts is excellent for free, simple narration, these alternatives offer higher emotional range or different free structures:
+
+AnySpeech: Notable in 2026 for its "no strings attached" free tier.
+
+Benefit: Provides unlimited access to basic voices across 100+ languages without requiring a signup or credit card.
+
+ElevenLabs: Remains the leader for high-fidelity, expressive voices.
+
+Free Tier: Includes 10,000 characters per month.
+
+Amazon Polly: Ideal for high-volume users in their first year.
+
+Free Tier: Offers 5 million characters per month for standard voices and 100k characters per month for neural/generative voices during the first 12 months.
+
+TTSMaker: A popular "completely free" web tool for basic voiceovers without any recurring costs.
+
+Fish Audio (S2 Pro): Currently ranked #1 on some quality leaderboards (like TTS-Arena2) for its ultra-realistic performance across 80+ languages.

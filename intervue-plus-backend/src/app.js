@@ -44,6 +44,10 @@ app.use(
 const resumeRoutes = require("./routes/resumeRoutes")
 app.use("/api/resume", resumeRoutes)
 
+// Interview Routes
+const interviewRoutes = require("./routes/interviewRoutes")
+app.use("/api/interviews", interviewRoutes)
+
 
 
 
