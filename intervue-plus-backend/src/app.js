@@ -39,14 +39,17 @@ app.use(
     submissionRoutes
 )
 
-
-// Resume Routes
+// Resume Routes
 const resumeRoutes = require("./routes/resumeRoutes")
 app.use("/api/resume", resumeRoutes)
 
 // Interview Routes
 const interviewRoutes = require("./routes/interviewRoutes")
 app.use("/api/interviews", interviewRoutes)
+
+// Evaluation Routes
+const evaluationRoutes = require("./routes/evaluationRoutes")
+app.use("/api/interviews", evaluationRoutes)
 
 
 
