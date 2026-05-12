@@ -1,8 +1,11 @@
 # Updated to reflect the new .env location
 intervue-plus-backend/.env
-Apis
-intervue-plus-backend/test-socket.html
+
+
 
 # Ignore dependencies
 node_modules/
 **/node_modules/
+
+# Ignore rules folder
+intervue-plus-backend/src/rules/
