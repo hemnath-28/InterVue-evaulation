@@ -12,9 +12,17 @@ const {
     processDocument
 } = require("../controllers/resumeControleer")
 
+// Middleware to ensure user is authenticated
+const ensureAuthenticated = (req, res, next) => {
+    if (req.isAuthenticated && req.isAuthenticated()) {
+        return next();
+    }
+    return res.status(401).json({ message: "Unauthorized. Please log in first." });
+};
+
 // POST /api/resume/upload
 // Submits PDF to Affinda (async). Returns 202 with Affinda document identifier.
-router.post("/upload", upload.single("resume"), uploadResume)
+router.post("/upload", ensureAuthenticated, upload.single("resume"), uploadResume)
 
 // POST /api/resume/webhook
 // Affinda calls this when resume parsing is complete.

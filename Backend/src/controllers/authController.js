@@ -38,9 +38,18 @@ const registerUser = async (req, res, next) => {
 
 // Profile Route (Protected)
 const getProfile = async (req, res) => {
+    // Populate resumes before sending
+    if (req.user && typeof req.user.populate === 'function') {
+        await req.user.populate('resumes');
+    }
+
+    // Convert Mongoose document to plain object if needed, then exclude password
+    const userObj = req.user && req.user.toObject ? req.user.toObject() : req.user;
+    const { password, ...sanitizedUser } = userObj || {};
+
     res.status(200).json({
         message: "Welcome to your profile",
-        user: req.user
+        user: sanitizedUser
     });
 }
 

@@ -3,6 +3,7 @@ const crypto   = require("crypto")
 const FormData = require("form-data")
 
 const Resume              = require("../models/Resume")
+const User                = require("../models/User")
 const { restructureResume } = require("../services/geminiService")
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -90,6 +91,7 @@ const uploadResume = async (req, res) => {
                 ""
 
             const resume = await Resume.create({
+                user:           req.user._id,
                 name:           structured.name           || "",
                 email:          structured.email          || "",
                 skills:         structured.skills         || [],
@@ -99,6 +101,11 @@ const uploadResume = async (req, res) => {
                 certifications: structured.certifications || [],
                 achievements:   structured.achievements   || [],
                 resumeUrl
+            })
+
+            // Add the resume reference to the user document
+            await User.findByIdAndUpdate(req.user._id, {
+                $push: { resumes: resume._id }
             })
 
             console.log("[Resume Upload] ── DONE ── Saved resume with id:", resume._id)
@@ -327,7 +334,10 @@ const processDocument = async (req, res) => {
             meta?.sourceDocuments?.[0]?.url ||
             ""
 
-        const resume = await Resume.create({
+        // processDocument is a manual trigger. We should ensure req.user exists if this is called from the frontend.
+        // If there's no user (e.g. called from Postman without session), we might need to handle it or require auth.
+        // Let's assume processDocument is also protected or we handle missing user gracefully.
+        const resumeData = {
             name:           structured.name           || "",
             email:          structured.email          || "",
             skills:         structured.skills         || [],
@@ -337,6 +347,21 @@ const processDocument = async (req, res) => {
             certifications: structured.certifications || [],
             achievements:   structured.achievements   || [],
             resumeUrl
+        }
+
+        if (req.user && req.user._id) {
+            resumeData.user = req.user._id;
+        } else {
+            // Since user is required in schema, if processDocument is not authenticated, this will fail.
+            // Returning error if no user is found.
+            return res.status(401).json({ message: "Unauthorized. Please log in first." });
+        }
+
+        const resume = await Resume.create(resumeData)
+
+        // Add the resume reference to the user document
+        await User.findByIdAndUpdate(req.user._id, {
+            $push: { resumes: resume._id }
         })
 
         console.log("[Process] ── DONE ── Saved resume id:", resume._id)

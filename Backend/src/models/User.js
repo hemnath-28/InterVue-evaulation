@@ -46,6 +46,13 @@ const UserSchema = new mongoose.Schema({
     cloudinary_id: {
         type: String
     },
+
+    resumes: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Resume'
+        }
+    ]
 }, {
     timestamps: true
 })

@@ -27,19 +27,11 @@ const ProblemSchema = new mongoose.Schema({
 
             "Frontend",
 
-            "Database",
-
             "System Design",
-
-            "Operating System",
 
             "Networking",
 
-            "JavaScript",
-
-            "React",
-
-            "Node.js"
+            
 
         ],
 
