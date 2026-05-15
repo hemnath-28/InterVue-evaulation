@@ -18,9 +18,9 @@ const ensureAuthenticated = (req, res, next) => {
 // Register
 UserRoute.post("/register", registerUser);
 
-// Login
+// Login — redirect to Profile page, not the JSON API endpoint
 UserRoute.post("/login", passport.authenticate('local', {
-    successRedirect: '/api/auth/profile',
+    successRedirect: '/Profile.html',
     failureRedirect: '/failed'
 }));
 
@@ -33,7 +33,7 @@ UserRoute.get("/google", passport.authenticate("google", { scope: ["profile", "e
 UserRoute.get("/google/callback", passport.authenticate("google", {
     failureRedirect: "/failed"
 }), (req, res) => {
-    res.redirect("/api/auth/profile");
+    res.redirect("/Profile.html");
 });
 
 // Github
@@ -41,7 +41,7 @@ UserRoute.get("/github", passport.authenticate("github", { scope: ["user:email"]
 UserRoute.get("/github/callback", passport.authenticate("github", {
     failureRedirect: "/failed"
 }), (req, res) => {
-    res.redirect("/api/auth/profile");
+    res.redirect("/Profile.html");
 });
 
 // =======================

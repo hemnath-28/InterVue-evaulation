@@ -149,8 +149,6 @@ const InterviewSessionSchema = new mongoose.Schema({
             ]
         },
 
-        // QUESTIONS ASKED
-
         questions: [{
 
             questionText: {
@@ -201,6 +199,21 @@ const InterviewSessionSchema = new mongoose.Schema({
                     "Hard"
 
                 ]
+            },
+
+            // The transcribed answer from the candidate
+            userAnswer: {
+                type: String
+            },
+
+            // Individual question score (optional, we use overallScore primarily)
+            score: {
+                type: Number
+            },
+
+            // Individual AI feedback for this answer
+            feedback: {
+                type: String
             }
 
         }],

@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
+const InterviewSession = require("../models/InterviewSession");
 
 // Register User
 const registerUser = async (req, res, next) => {
@@ -25,10 +26,10 @@ const registerUser = async (req, res, next) => {
             provider: 'local'
         });
 
-        // Log the user in after registration to create a session
+        // Log the user in after registration and redirect to Profile page
         req.login(user, (err) => {
             if (err) return next(err);
-            res.redirect("/api/auth/profile");
+            res.redirect("/Profile.html");
         });
 
     } catch (err) {
@@ -43,13 +44,21 @@ const getProfile = async (req, res) => {
         await req.user.populate('resumes');
     }
 
+    // Fetch the user's past interview sessions
+    const sessions = await InterviewSession.find({ user: req.user._id })
+        .select('targetRole experienceLevel status overallScore createdAt')
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .lean();
+
     // Convert Mongoose document to plain object if needed, then exclude password
     const userObj = req.user && req.user.toObject ? req.user.toObject() : req.user;
     const { password, ...sanitizedUser } = userObj || {};
 
     res.status(200).json({
         message: "Welcome to your profile",
-        user: sanitizedUser
+        user: sanitizedUser,
+        sessions
     });
 }
 

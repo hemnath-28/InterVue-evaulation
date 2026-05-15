@@ -77,6 +77,82 @@ Return ONLY a valid JSON object with the exact following structure. Do not inclu
     return evaluation;
 };
 
+const evaluateFullSession = async (sessionData) => {
+    const { targetRole, experienceLevel, rounds } = sessionData;
+
+    // Format all Q&A pairs for the prompt
+    let qaText = "";
+    rounds.forEach((round, roundIndex) => {
+        qaText += `\n--- Round ${roundIndex + 1}: ${round.roundType} ---\n`;
+        round.questions.forEach((q, qIndex) => {
+            qaText += `Q${qIndex + 1}: ${q.questionText}\n`;
+            qaText += `Answer: ${q.userAnswer || "[No Answer Provided]"}\n\n`;
+        });
+    });
+
+    const prompt = `
+You are an expert technical interviewer evaluating a candidate for a ${targetRole} position at the ${experienceLevel} level. 
+The candidate has just completed their interview. Below is the full transcript of questions asked and the candidate's answers.
+
+Evaluate the candidate's overall performance.
+Return ONLY a valid JSON object with the exact following structure. Do not include markdown code blocks or any other text.
+{
+   "overallScore": <number from 1 to 10, representing the overall interview score>,
+   "overallFeedback": "<string: a comprehensive summary of their performance>",
+   "questionEvaluations": [
+       {
+           "questionText": "<string: the exact question text>",
+           "score": <number 1 to 10 for this specific answer>,
+           "feedback": "<string: feedback for this specific answer>"
+       }
+   ]
+}
+
+Interview Transcript:
+${qaText}
+`;
+
+    console.log("[EvaluationService] Sending full session evaluation prompt to Groq...");
+    
+    const response = await axios.post(
+        "https://api.groq.com/openai/v1/chat/completions",
+        {
+            model: "llama-3.3-70b-versatile",
+            messages: [
+                {
+                    role: "system",
+                    content: "You are an expert technical interviewer. Always respond with strict JSON."
+                },
+                {
+                    role: "user",
+                    content: prompt
+                }
+            ],
+            response_format: { type: "json_object" },
+            temperature: 0.3
+        },
+        {
+            headers: {
+                "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+                "Content-Type": "application/json"
+            }
+        }
+    );
+
+    const responseText = response.data.choices[0].message.content.trim();
+
+    let evaluation;
+    try {
+        evaluation = JSON.parse(responseText);
+    } catch (parseErr) {
+        console.error("[EvaluationService] JSON parse failed! Raw text was:", responseText);
+        throw new Error("Failed to parse AI response into valid JSON");
+    }
+
+    return evaluation;
+};
+
 module.exports = {
-    evaluateAnswer
+    evaluateAnswer,
+    evaluateFullSession
 };

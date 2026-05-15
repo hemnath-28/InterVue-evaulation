@@ -87,6 +87,80 @@ const generateInterview = async (req, res) => {
     }
 };
 
+const saveAnswer = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { roundIndex, questionIndex, userAnswer } = req.body;
+
+        const session = await InterviewSession.findById(id);
+        if (!session) return res.status(404).json({ message: "Session not found." });
+
+        if (session.rounds[roundIndex] && session.rounds[roundIndex].questions[questionIndex]) {
+            session.rounds[roundIndex].questions[questionIndex].userAnswer = userAnswer;
+            await session.save();
+            return res.status(200).json({ message: "Answer saved successfully." });
+        } else {
+            return res.status(400).json({ message: "Invalid round or question index." });
+        }
+    } catch (error) {
+        console.error("[InterviewController] saveAnswer ERROR:", error);
+        return res.status(500).json({ message: "Failed to save answer", error: error.message });
+    }
+};
+
+const { evaluateFullSession } = require("../services/evaluationService");
+
+const evaluateSession = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const session = await InterviewSession.findById(id);
+        if (!session) return res.status(404).json({ message: "Session not found." });
+
+        const evaluation = await evaluateFullSession(session);
+
+        // Update session with evaluation results
+        session.overallScore = evaluation.overallScore;
+        session.overallFeedback = evaluation.overallFeedback;
+        session.status = "Completed";
+
+        // Map question scores back to the document
+        if (evaluation.questionEvaluations && Array.isArray(evaluation.questionEvaluations)) {
+            session.rounds.forEach((round) => {
+                round.questions.forEach((q) => {
+                    const match = evaluation.questionEvaluations.find(ev => ev.questionText === q.questionText);
+                    if (match) {
+                        q.score = match.score;
+                        q.feedback = match.feedback;
+                    }
+                });
+            });
+        }
+
+        await session.save();
+        return res.status(200).json({ message: "Session evaluated successfully", session });
+    } catch (error) {
+        console.error("[InterviewController] evaluateSession ERROR:", error);
+        return res.status(500).json({ message: "Failed to evaluate session", error: error.message });
+    }
+};
+
+const getSessionResults = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const session = await InterviewSession.findById(id).populate('user', 'name email');
+        if (!session) return res.status(404).json({ message: "Session not found." });
+
+        return res.status(200).json({ session });
+    } catch (error) {
+        console.error("[InterviewController] getSessionResults ERROR:", error);
+        return res.status(500).json({ message: "Failed to fetch session results", error: error.message });
+    }
+};
+
 module.exports = {
-    generateInterview
+    generateInterview,
+    saveAnswer,
+    evaluateSession,
+    getSessionResults
 };

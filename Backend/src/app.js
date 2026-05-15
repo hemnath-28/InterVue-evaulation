@@ -13,9 +13,11 @@ app.use(express.json());
 require('./config/passport')(passport);
 
 app.use(session({
-    secret: process.env.secretkey || 'secret',
+    // ─── FIX: env var is 'secretKey' (capital K) — fall back to a safe default
+    secret: process.env.secretKey || process.env.secretkey || 'intervue_session_secret',
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    cookie: { secure: false, httpOnly: true, maxAge: 24 * 60 * 60 * 1000 } // 1 day
 }));
 
 app.use(passport.initialize());
@@ -31,9 +33,9 @@ app.get("/", (req, res) => {
 
 app.use(express.static(frontendPath, { index: false }));
 
-// Failure route
+// ─── FIX: Redirect to login.html with an error flag instead of raw HTML ───
 app.get("/failed", (req, res) => {
-    res.send("<h1>Authentication Failed</h1><p>Invalid credentials or error occurred.</p><a href='/'>Try again</a>");
+    res.redirect('/?auth_error=1');
 });
 
 // Original Home route
@@ -61,7 +63,9 @@ app.use("/api/resume", resumeRoutes);
 const interviewRoutes = require("./routes/interviewRoutes");
 app.use("/api/interviews", interviewRoutes);
 
+// NOTE: evaluationRoutes (old single-answer evaluator) kept on a separate path
+// to avoid conflicting with the new interviewRoutes endpoints.
 const evaluationRoutes = require("./routes/evaluationRoutes");
-app.use("/api/interviews", evaluationRoutes);
+app.use("/api/eval", evaluationRoutes);
 
 module.exports = app;

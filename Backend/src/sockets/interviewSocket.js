@@ -8,20 +8,68 @@ const { textToSpeech } = require("../services/deepgramService");
  * @param {Object} socket - The active Socket.IO client
  */
 const interviewSocket = (socket) => {
-    let deepgramWs = null; // raw WebSocket to Deepgram
+    let deepgramWs = null;
     let isActive = false;
 
-    // CLIENT → interview:start
-    // Opens the Deepgram STT WebSocket and starts listening
-    socket.on("interview:start", (data) => {
-        console.log(`[InterviewSocket] Interview started for socket ${socket.id}`, data);
-        isActive = true;
+    /**
+     * Safely close the existing Deepgram WebSocket connection.
+     */
+    function closeDeepgramStream() {
+        if (deepgramWs) {
+            try {
+                if (deepgramWs.readyState === WebSocket.OPEN || deepgramWs.readyState === WebSocket.CONNECTING) {
+                    deepgramWs.close();
+                }
+            } catch (e) {
+                // Ignore cleanup errors
+            }
+            deepgramWs = null;
+        }
+    }
 
-        // Open Deepgram STT stream (synchronous setup, async connection)
+    /**
+     * Open a fresh Deepgram STT connection for the current question.
+     */
+    function openDeepgramStream() {
+        closeDeepgramStream(); // always close any stale one first
         deepgramWs = setupAudioStream(socket);
-
         if (!deepgramWs) {
             socket.emit("interview:error", { message: "Failed to initialize Speech-to-Text. Check API key." });
+        }
+        return deepgramWs;
+    }
+
+    // CLIENT → interview:start
+    // Called once at the very beginning of the session
+    socket.on("interview:start", (data) => {
+        console.log(`[InterviewSocket] Session started for socket ${socket.id}`);
+        isActive = true;
+        // Open the first Deepgram stream immediately so it's ready
+        openDeepgramStream();
+    });
+
+    // CLIENT → recording:start
+    // Called each time the user presses "Start Speaking" for a new question.
+    // We reopen a fresh Deepgram connection to ensure a clean stream.
+    socket.on("recording:start", () => {
+        if (!isActive) return;
+        console.log(`[InterviewSocket] New recording started — reopening Deepgram stream for ${socket.id}`);
+        openDeepgramStream();
+        socket.emit("recording:ready"); // tell client the stream is ready
+    });
+
+    // CLIENT → recording:stop
+    // Called when the user stops speaking. We finalize the stream.
+    socket.on("recording:stop", () => {
+        if (!deepgramWs) return;
+        console.log(`[InterviewSocket] Recording stopped — finalizing Deepgram stream for ${socket.id}`);
+        try {
+            if (deepgramWs.readyState === WebSocket.OPEN) {
+                // Send CloseStream to flush any remaining audio
+                deepgramWs.send(JSON.stringify({ type: "CloseStream" }));
+            }
+        } catch (e) {
+            // Ignore
         }
     });
 
@@ -33,6 +81,8 @@ const interviewSocket = (socket) => {
         // Only send when WebSocket is fully open (readyState 1 = OPEN)
         if (deepgramWs.readyState === WebSocket.OPEN) {
             deepgramWs.send(audioChunk);
+        } else {
+            console.warn(`[InterviewSocket] Audio chunk dropped — Deepgram not OPEN (state: ${deepgramWs.readyState})`);
         }
     });
 
@@ -46,7 +96,7 @@ const interviewSocket = (socket) => {
         }
 
         try {
-            console.log(`[InterviewSocket] TTS request: "${text}"`);
+            console.log(`[InterviewSocket] TTS request: "${text.substring(0, 60)}..."`);
             const audioBuffer = await textToSpeech(text);
             socket.emit("question:audio", { audio: audioBuffer, text });
         } catch (error) {
@@ -59,16 +109,8 @@ const interviewSocket = (socket) => {
     // Clean up Deepgram WebSocket when the client leaves
     socket.on("disconnect", () => {
         isActive = false;
-
-        if (deepgramWs) {
-            console.log(`[InterviewSocket] Closing Deepgram stream for ${socket.id}`);
-            try {
-                deepgramWs.close();
-            } catch (e) {
-                // Ignore cleanup errors
-            }
-            deepgramWs = null;
-        }
+        console.log(`[InterviewSocket] Cleaning up for disconnected socket ${socket.id}`);
+        closeDeepgramStream();
     });
 };
 

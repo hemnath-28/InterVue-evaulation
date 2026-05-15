@@ -21,3 +21,14 @@ initSocket(server)
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
+
+// Handle port-in-use error gracefully
+server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+        console.error(`\n❌ Port ${PORT} is already in use.`)
+        console.error(`   Run this to free it: Stop-Process -Id (Get-NetTCPConnection -LocalPort ${PORT}).OwningProcess -Force`)
+        process.exit(1)
+    } else {
+        throw err
+    }
+})
