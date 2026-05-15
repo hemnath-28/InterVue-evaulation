@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Intervue | My Profile</title>
+  <meta name="description" content="View your Intervue profile, uploaded resumes, skills, and interview history.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: { primary: '#2563eb', primaryHover: '#1d4ed8' }
+        }
+      }
+    }
+  </script>
+  <style>
+    .skill-chip { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+    .skill-chip:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(37,99,235,0.15); }
+    .session-row { transition: background 0.15s ease; }
+    .session-row:hover { background: #f8faff; }
+    .avatar-ring { background: conic-gradient(#2563eb 0%, #7c3aed 50%, #0ea5e9 100%); }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans min-h-screen flex flex-col">
+
+  <!-- Navigation -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16 items-center">
+        <a href="index.html" class="flex items-center gap-2 text-xl font-bold text-gray-900">
+          <div class="w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center font-bold text-sm shadow-sm">IV</div>
+          Intervue
+        </a>
+        <nav class="flex gap-1 items-center">
+          <a href="Interview.html" class="text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-100 py-1.5 px-3 rounded-md transition-colors">Setup</a>
+          <a href="Profile.html" class="text-sm font-medium text-primary bg-blue-50 py-1.5 px-3 rounded-md">Profile</a>
+          <a href="/api/auth/logout" class="text-sm font-medium text-gray-500 hover:text-red-600 hover:bg-red-50 py-1.5 px-3 rounded-md transition-colors ml-1">Logout</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-grow max-w-6xl mx-auto w-full px-4 sm:px-6 py-10">
+
+    <!-- Loading State -->
+    <div id="loadingState" class="flex flex-col items-center justify-center py-28">
+      <svg class="animate-spin h-10 w-10 text-primary mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      <p class="text-gray-500 font-medium">Loading your profile...</p>
+    </div>
+
+    <!-- Profile Content -->
+    <div id="profileContent" class="hidden space-y-8">
+
+      <!-- ── Hero Card ── -->
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-xl shadow-gray-200/50 overflow-hidden">
+        <!-- Banner gradient -->
+        <div class="h-28 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 relative">
+          <div class="absolute inset-0 opacity-20" style="background-image: url('data:image/svg+xml,%3Csvg width=60 height=60 viewBox=0 0 60 60 xmlns=http://www.w3.org/2000/svg%3E%3Cg fill=none fill-rule=evenodd%3E%3Cg fill=%23ffffff fill-opacity=0.4%3E%3Cpath d=M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
+        </div>
+
+        <div class="px-8 pb-8 -mt-14 relative">
+          <div class="flex flex-col sm:flex-row items-start sm:items-end gap-5 mb-6">
+            <!-- Avatar -->
+            <div class="avatar-ring p-[3px] rounded-full flex-shrink-0 shadow-lg">
+              <div id="avatarEl" class="w-24 h-24 rounded-full bg-white flex items-center justify-center overflow-hidden border-2 border-white">
+                <span id="avatarInitials" class="text-3xl font-extrabold text-primary">?</span>
+              </div>
+            </div>
+
+            <!-- Name + Meta -->
+            <div class="flex-grow pb-1">
+              <div class="flex flex-wrap items-center gap-3 mb-1">
+                <h1 id="userName" class="text-3xl font-extrabold text-gray-900">Loading...</h1>
+                <span id="providerBadge" class="hidden inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-100 text-blue-700"></span>
+                <span id="roleBadge" class="hidden inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-violet-100 text-violet-700"></span>
+              </div>
+              <p id="userEmail" class="text-gray-500 text-sm font-medium">—</p>
+              <p id="memberSince" class="text-gray-400 text-xs mt-1">Member since —</p>
+            </div>
+
+            <!-- Action -->
+            <a href="Interview.html" class="flex-shrink-0 inline-flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primaryHover text-white text-sm font-semibold rounded-xl shadow-sm transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              Start Interview
+            </a>
+          </div>
+
+          <!-- Stats Row -->
+          <div class="grid grid-cols-3 sm:grid-cols-3 gap-4 pt-4 border-t border-gray-100">
+            <div class="text-center">
+              <p id="statResumes" class="text-2xl font-extrabold text-gray-900">0</p>
+              <p class="text-xs text-gray-400 font-medium uppercase tracking-wider mt-0.5">Resumes</p>
+            </div>
+            <div class="text-center border-x border-gray-100">
+              <p id="statSessions" class="text-2xl font-extrabold text-gray-900">0</p>
+              <p class="text-xs text-gray-400 font-medium uppercase tracking-wider mt-0.5">Interviews</p>
+            </div>
+            <div class="text-center">
+              <p id="statAvgScore" class="text-2xl font-extrabold text-primary">—</p>
+              <p class="text-xs text-gray-400 font-medium uppercase tracking-wider mt-0.5">Avg. Score</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Two Column Layout ── -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        <!-- Left Column: Skills + Education -->
+        <div class="lg:col-span-1 space-y-6">
+
+          <!-- Skills -->
+          <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+            <h2 class="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+              Skills
+            </h2>
+            <div id="skillsContainer" class="flex flex-wrap gap-2">
+              <p class="text-sm text-gray-400 italic">Upload a resume to see skills.</p>
+            </div>
+          </div>
+
+          <!-- Education -->
+          <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+            <h2 class="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path></svg>
+              Education
+            </h2>
+            <div id="educationContainer" class="space-y-4">
+              <p class="text-sm text-gray-400 italic">No education data found.</p>
+            </div>
+          </div>
+
+          <!-- Certifications & Achievements -->
+          <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+            <h2 class="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>
+              Achievements
+            </h2>
+            <div id="achievementsContainer" class="space-y-2">
+              <p class="text-sm text-gray-400 italic">No achievements found.</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column: Experience + Sessions -->
+        <div class="lg:col-span-2 space-y-6">
+
+          <!-- Experience -->
+          <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+            <h2 class="text-base font-bold text-gray-900 mb-5 flex items-center gap-2">
+              <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+              Work Experience
+            </h2>
+            <div id="experienceContainer" class="space-y-5">
+              <p class="text-sm text-gray-400 italic">No experience data found.</p>
+            </div>
+          </div>
+
+          <!-- Projects -->
+          <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+            <h2 class="text-base font-bold text-gray-900 mb-5 flex items-center gap-2">
+              <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+              Projects
+            </h2>
+            <div id="projectsContainer" class="space-y-4">
+              <p class="text-sm text-gray-400 italic">No projects found.</p>
+            </div>
+          </div>
+
+          <!-- Interview History -->
+          <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+              <h2 class="text-base font-bold text-gray-900 flex items-center gap-2">
+                <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                Interview History
+              </h2>
+              <a href="Interview.html" class="text-xs font-semibold text-primary hover:underline">+ New Session</a>
+            </div>
+            <div id="sessionsContainer">
+              <div class="px-6 py-10 text-center">
+                <svg class="w-12 h-12 text-gray-200 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                <p class="text-gray-400 text-sm">No interviews yet.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="bg-white border-t border-gray-200 py-6 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-gray-400">
+      &copy; 2026 Intervue. All rights reserved.
+    </div>
+  </footer>
+
+  <script src="Profile.js"></script>
+</body>
+</html>

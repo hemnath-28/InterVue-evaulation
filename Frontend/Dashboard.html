@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Intervue | Dashboard Results</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: { primary: '#2563eb', primaryHover: '#1d4ed8' }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans min-h-screen flex flex-col">
+  
+  <header class="bg-white border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16 items-center">
+        <a href="index.html" class="flex items-center gap-2 text-xl font-bold text-gray-900">
+          <div class="w-8 h-8 bg-primary text-white rounded flex items-center justify-center font-bold text-sm">IV</div>
+          Intervue Dashboard
+        </a>
+        <nav class="flex gap-6">
+          <a href="Interview.html" class="text-sm font-medium text-gray-500 hover:text-gray-900 py-1 transition-colors">Start New Session</a>
+          <a id="logoutBtn" href="/api/auth/logout" class="text-sm font-medium text-gray-500 hover:text-gray-900 py-1 transition-colors">Logout</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-grow max-w-5xl mx-auto w-full px-4 sm:px-6 py-10">
+    
+    <div id="loadingState" class="flex flex-col items-center justify-center py-20">
+        <svg class="animate-spin h-10 w-10 text-primary mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <p class="text-gray-500 font-medium">Loading evaluation results...</p>
+    </div>
+
+    <div id="dashboardContent" class="hidden flex-col gap-8">
+        
+        <!-- Score Overview -->
+        <section class="bg-white rounded-2xl border border-gray-200 shadow-xl shadow-gray-200/50 p-8 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-2 h-full bg-primary"></div>
+            
+            <div class="flex-shrink-0 relative w-32 h-32 flex items-center justify-center rounded-full bg-blue-50 border-8 border-blue-100">
+                <div class="text-center">
+                    <span id="overallScore" class="block text-4xl font-extrabold text-primary">--</span>
+                    <span class="text-xs font-bold text-blue-400 uppercase tracking-wider">/ 10</span>
+                </div>
+            </div>
+
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Interview Completed</h1>
+                <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Target Role: <span id="targetRoleText" class="text-gray-800"></span> • Level: <span id="expLevelText" class="text-gray-800"></span></p>
+                <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                    <h3 class="text-sm font-bold text-gray-900 mb-1">AI Overall Feedback</h3>
+                    <p id="overallFeedback" class="text-gray-600 leading-relaxed text-sm">Loading feedback...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Detailed Breakdown -->
+        <section>
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Question Breakdown</h2>
+            <div id="questionsContainer" class="space-y-6">
+                <!-- Dynamically populated by JS -->
+            </div>
+        </section>
+
+    </div>
+
+  </main>
+
+  <footer class="bg-white border-t border-gray-200 py-6 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-gray-500">
+      &copy; 2026 Intervue. All rights reserved.
+    </div>
+  </footer>
+
+  <script src="Dashboard.js"></script>
+</body>
+</html>

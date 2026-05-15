@@ -142,27 +142,34 @@
       const sectionSignup = document.getElementById('section-signup');
 
       if (tab === 'login') {
-        // Style buttons
         btnLogin.className = "w-full rounded-lg py-2.5 text-sm font-semibold leading-5 text-gray-700 transition-all focus:outline-none focus:ring-2 focus:ring-primary/50 shadow bg-white ring-1 ring-gray-900/5";
         btnSignup.className = "w-full rounded-lg py-2.5 text-sm font-medium leading-5 text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-all focus:outline-none";
-        
-        // Toggle sections
         sectionLogin.classList.remove('hidden');
         sectionLogin.classList.add('block');
         sectionSignup.classList.remove('block');
         sectionSignup.classList.add('hidden');
       } else {
-        // Style buttons
         btnSignup.className = "w-full rounded-lg py-2.5 text-sm font-semibold leading-5 text-gray-700 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/50 shadow bg-white ring-1 ring-gray-900/5";
         btnLogin.className = "w-full rounded-lg py-2.5 text-sm font-medium leading-5 text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-all focus:outline-none";
-        
-        // Toggle sections
         sectionSignup.classList.remove('hidden');
         sectionSignup.classList.add('block');
         sectionLogin.classList.remove('block');
         sectionLogin.classList.add('hidden');
       }
     }
+
+    // ─── Show auth error banner if redirected from a protected page ───────────
+    document.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('auth_error') === '1') {
+        const banner = document.createElement('div');
+        banner.className = 'mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 font-medium text-center';
+        banner.textContent = 'You must be logged in to access that page. Please sign in below.';
+        // Insert banner before the tab switcher
+        const card = document.querySelector('.bg-white.py-8');
+        if (card) card.insertBefore(banner, card.firstChild);
+      }
+    });
   </script>
 </body>
 </html>

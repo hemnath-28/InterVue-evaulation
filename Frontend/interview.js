@@ -145,4 +145,56 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Call on load
     loadUserResumes();
+
+    // Start Interview Logic
+    const startInterviewBtn = document.getElementById('startInterviewBtn');
+    const startStatus = document.getElementById('startStatus');
+    const targetRoleSelect = document.getElementById('targetRole');
+    const experienceLevelSelect = document.getElementById('experienceLevel');
+
+    if (startInterviewBtn) {
+        startInterviewBtn.addEventListener('click', async () => {
+            const selectedResumeRadio = document.querySelector('input[name="selectedResume"]:checked');
+            
+            if (!selectedResumeRadio) {
+                startStatus.innerHTML = '<span style="color: #ef4444;">Please select a resume first.</span>';
+                return;
+            }
+
+            const resumeId = selectedResumeRadio.value;
+            const targetRole = targetRoleSelect.value;
+            const experienceLevel = experienceLevelSelect.value;
+
+            startInterviewBtn.disabled = true;
+            startStatus.innerHTML = '<span style="color: #3b82f6;">Generating AI Interview Questions...</span>';
+
+            try {
+                const response = await fetch('/api/interviews/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ resumeId, targetRole, experienceLevel })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    startStatus.innerHTML = '<span style="color: #10b981;">Ready! Redirecting to Interview Room...</span>';
+                    // Redirect to the interview room with the session ID
+                    setTimeout(() => {
+                        window.location.href = `InterviewRoom.html?sessionId=${data.interviewSessionId}`;
+                    }, 1000);
+                } else {
+                    startStatus.innerHTML = `<span style="color: #ef4444;">Error: ${data.message}</span>`;
+                    startInterviewBtn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Start Interview Error:', error);
+                startStatus.innerHTML = '<span style="color: #ef4444;">Network error occurred.</span>';
+                startInterviewBtn.disabled = false;
+            }
+        });
+    }
 });
