@@ -24,6 +24,7 @@ const InterviewSessionSchema = new mongoose.Schema({
         "Frontend Developer",
         "Backend Developer",
         "Full Stack Developer",
+        "Software Engineer",
         "Node.js Developer",
         "React Developer",
         "Mobile App Developer", 
@@ -36,7 +37,9 @@ const InterviewSessionSchema = new mongoose.Schema({
         "DevOps Engineer",
         "Cloud Engineer",
         "Security Engineer",
+        "Cybersecurity Analyst",
         "QA Automation Engineer",
+        "QA/Test Automation Engineer",
         "Embedded Systems Engineer",
         "UI/UX Designer"
 

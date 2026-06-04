@@ -1,284 +1,130 @@
-# Intervue+
+# 🎙️ Intervue | AI-Powered Mock Interview Platform
 
-A real-time interview preparation and live coding platform built with Node.js, Express, MongoDB, Socket.IO, and Docker.
-
----
-
-# 🚀 Overview
-
-Intervue+ is a backend-focused full-stack project designed to simulate real technical interview environments.
-
-The platform allows:
-
-- Candidates to solve coding problems
-- Interviewers to conduct live coding interviews
-- Real-time collaborative coding
-- AI-powered interview feedback
-- Secure authentication and role-based access
-
-This project focuses heavily on:
-- backend architecture
-- scalability
-- real-time systems
-- authentication
-- security
-- code execution systems
+Intervue is a cutting-edge, end-to-end AI mock interview system designed to help candidates prepare for technical and behavioral interviews. By leveraging state-of-the-art Large Language Models (LLMs) and Speech APIs, Intervue provides a realistic, real-time interview experience with holistic feedback.
 
 ---
 
-# ✨ Features
+## 🚀 Key Features
 
-## 🔐 Authentication & Security
-
-- JWT Authentication
-- Refresh Tokens
-- Secure Cookies
-- Role-Based Access Control
-- Password Hashing
-- Rate Limiting
-- Helmet.js Security
-- Environment Variables
+- **📄 Intelligent Resume Parsing**: Upload your PDF resume; parsed via **Affinda** and restructured into a clean schema by **Gemini 1.5 Flash**.
+- **🤖 Dynamic Question Generation**: AI analyzes your specific skills, experience, and projects to generate 8-9 tailored interview questions across multiple rounds (Technical, Behavioral, Project-based).
+- **🗣️ Real-time Bidirectional Voice**: 
+    - **AI Voice**: Questions are read aloud using **Deepgram Aura TTS** (high-fidelity, low-latency).
+    - **Candidate Voice**: Speak your answers directly in the browser via **Web Speech API** (SpeechRecognition) with live transcriptions.
+- **📊 Holistic Evaluation**: After the interview, **Groq (LLaMA 3.3 70B)** analyzes the entire transcript to provide a total score (out of 10), detailed feedback for each answer, and areas for improvement.
+- **👤 Premium Dashboard**: View your interview history, overall scores, and deep-dive into AI evaluations for every past session.
+- **🔐 Secure Auth**: Multi-provider authentication (Local, Google, GitHub) via **Passport.js**.
 
 ---
 
-## 💻 Coding Platform
+## 🛠️ Tech Stack
 
-- Coding Problems CRUD
-- Difficulty Levels
-- Tags & Categories
-- Hidden Test Cases
-- Code Submissions
-- Execution Results
-
----
-
-## ⚡ Real-Time Features
-
-- Live Coding Rooms
-- Real-Time Collaborative Editor
-- Live Chat
-- Presence Detection
-- Socket.IO Integration
+| Layer | Technologies |
+|---|---|
+| **Frontend** | Vanilla HTML5, JavaScript (ES6+), Tailwind CSS |
+| **Backend** | Node.js, Express.js |
+| **Database** | MongoDB (Mongoose) |
+| **Real-time** | Socket.io |
+| **AI Evaluation** | Groq (LLaMA 3.3 70B), Google Gemini 1.5 Flash |
+| **Speech** | Deepgram Aura (TTS), Web Speech API (STT) |
+| **Resume Parsing** | Affinda API |
 
 ---
 
-## 🤖 AI Features
-
-- AI Interview Feedback
-- Resume Analysis
-- Interview Question Suggestions
-
----
-
-## 📊 Recruiter Features
-
-- Candidate Tracking
-- Interview Scheduling
-- Reports & Analytics
-
----
-
-# 🛠️ Tech Stack
-
-## Backend
-
-- Node.js
-- Express.js
-- MongoDB
-- Mongoose
-- JWT
-- Socket.IO
-- Redis
-- Docker
-
----
-
-## Frontend
-
-- React
-- Next.js
-
----
-
-## Tools
-
-- Postman
-- GitHub
-- Docker Desktop
-
----
-
-# 📁 Project Structure
+## 📁 Project Structure
 
 ```plaintext
-src/
-│
-├── config/
-├── controllers/
-├── middleware/
-├── models/
-├── routes/
-├── services/
-├── sockets/
-├── utils/
-├── validators/
-├── jobs/
-├── db/
-│
-├── app.js
-└── server.js
+Intervue/
+├── Backend/
+│   ├── src/
+│   │   ├── config/         # Passport, Socket.io, DB configs
+│   │   ├── controllers/    # Business logic (Auth, Interview, Resume)
+│   │   ├── models/         # Mongoose Schemas (User, Resume, Session)
+│   │   ├── routes/         # Express API endpoints
+│   │   ├── services/       # External API integrations (Gemini, Deepgram, Groq)
+│   │   ├── sockets/        # Real-time interview event handlers
+│   │   └── server.js       # Entry point
+├── Frontend/               # Pure HTML/JS/CSS assets
+│   ├── index.html          # Landing Page / Login
+│   ├── Profile.html        # User Dashboard & Resume History
+│   ├── Interview.html      # Session Setup (Role/Experience selection)
+│   ├── InterviewRoom.html  # Live Interview Interface
+│   └── Dashboard.html      # Post-Interview AI Results
+└── readme.md
 ```
 
 ---
 
-# 🔥 Main Modules
+## ⚙️ Setup & Installation
 
-| Module | Description |
-|---|---|
-| Auth | Login/Register/JWT |
-| Problems | Coding problems management |
-| Submissions | Code execution & results |
-| Rooms | Live interview rooms |
-| Chat | Real-time messaging |
-| AI | AI-based feedback |
-| Notifications | Alerts & reminders |
-
----
-
-# 🧠 Learning Goals
-
-This project is built to learn:
-
-- Backend Architecture
-- Authentication Systems
-- Real-Time Communication
-- Secure API Design
-- Docker Sandboxing
-- Redis Caching
-- WebSocket Systems
-- Database Design
-- System Design Basics
-
----
-
-# 🔒 Security Features
-
-- Helmet.js
-- Rate Limiting
-- Secure Cookies
-- Input Validation
-- Protected Routes
-- Password Hashing
-- Environment Variables
-
----
-
-# ⚙️ Installation
-
-## Clone Repository
-
+### 1. Clone the repository
 ```bash
 git clone <repo-url>
+cd Intervue
 ```
 
----
-
-## Install Dependencies
-
+### 2. Install Dependencies
 ```bash
+cd Backend
 npm install
 ```
 
----
-
-## Create Environment Variables
-
-Create a `.env` file:
-
+### 3. Environment Variables
+Create a `.env` file in the `Backend` directory:
 ```env
-PORT=5000
-MONGO_URI=your_mongodb_uri
-JWT_SECRET=your_secret
-JWT_REFRESH_SECRET=your_refresh_secret
+PORT=3000
+MONGO_URI=your_mongodb_connection_string
+secretKey=your_session_secret
+
+# AI APIs
+GEMINI_API_KEY=your_google_gemini_key
+GROQ_API_KEY=your_groq_llama_key
+DEEPGRAM_API_KEY=your_deepgram_key
+
+# Resume Parsing
+AFFINDA_API_KEY=your_affinda_key
+AFFINDA_WORKSPACE=your_workspace_id
+
+# OAuth (Optional)
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+GITHUB_CLIENT_ID=...
+GITHUB_CLIENT_SECRET=...
 ```
 
----
-
-## Start Development Server
-
+### 4. Run the Application
 ```bash
 npm run dev
 ```
+Open **http://localhost:3000** in your browser (Chrome/Edge recommended for Speech API support).
 
 ---
 
-# 📌 Future Improvements
+## 🔄 Workflow Tree
 
-- Dockerized Code Execution
-- Video Calling
-- Screen Sharing
-- Multi-language Code Runner
-- Plagiarism Detection
-- Advanced Analytics
-- Kubernetes Deployment
+```mermaid
+graph TD
+    A[User Login] --> B[Profile Page]
+    B --> C[Upload Resume]
+    C --> D[Affinda Parsing + Gemini Restructuring]
+    D --> E[Structured Resume Stored]
+    E --> F[Interview Setup]
+    F --> G[Generate Questions via Gemini]
+    G --> H[Interview Room]
+    
+    subgraph "Real-Time Interview Loop (Socket.io)"
+        H --> I[AI Speaks Question - Deepgram TTS]
+        I --> J[User Speaks Answer - Web Speech STT]
+        J --> K[Submit Answer & Load Next]
+    end
+    
+    K --> L[Interview Complete]
+    L --> M[Holistic Evaluation - Groq/LLaMA 3.3]
+    M --> N[Results Dashboard]
+    N --> O[View Total Score & Feedback]
+```
 
 ---
 
-# 📖 API Documentation
-
-API documentation will be added using Swagger/OpenAPI.
-
----
-
-# 👨‍💻 Author
-
-Built for learning advanced backend engineering concepts.
-
----
-
-# 📜 License
-
-This project is for educational purposes.
-
-
-Beyond the specific tools you mentioned, there are several competitive alternatives for both transcription (STT) and text-to-speech (TTS) in 2026. These range from established cloud APIs with recurring free tiers to fully open-source models for unlimited use.
-
-1. Transcription (Speech-to-Text) Alternatives
-If you need high-speed transcription similar to Deepgram Nova-2, these platforms offer diverse free options:
-
-OpenAI Whisper: Considered the industry standard for multilingual accuracy.
-
-Free Option: You can run the Whisper model locally for free if you have a GPU, giving you unlimited transcription without any API costs.
-
-Paid API: For those who prefer the API, it costs approximately $0.006 per minute.
-
-Deepgram Nova-3: The successor to the model you listed, optimized for even lower latency and higher scalability.
-
-Free Tier: Offers 200 minutes per month for testing and small projects.
-
-AssemblyAI: A feature-rich alternative that provides more than just text, including summarization and sentiment analysis.
-
-Pricing: Competitive at roughly $0.65 per audio hour.
-
-Otter.ai: Best for live meetings; it includes a free basic version with limited monthly minutes for transcribing Zoom, Teams, or Google Meet calls.
-
-YouTube: A "hidden" free alternative. If you upload a video, YouTube generates automatic captions for free, which can be downloaded as a rough transcript.
-
-2. Text-to-Speech (TTS) Alternatives
-While edge-tts is excellent for free, simple narration, these alternatives offer higher emotional range or different free structures:
-
-AnySpeech: Notable in 2026 for its "no strings attached" free tier.
-
-Benefit: Provides unlimited access to basic voices across 100+ languages without requiring a signup or credit card.
-
-ElevenLabs: Remains the leader for high-fidelity, expressive voices.
-
-Free Tier: Includes 10,000 characters per month.
-
-Amazon Polly: Ideal for high-volume users in their first year.
-
-Free Tier: Offers 5 million characters per month for standard voices and 100k characters per month for neural/generative voices during the first 12 months.
-
-TTSMaker: A popular "completely free" web tool for basic voiceovers without any recurring costs.
-
-Fish Audio (S2 Pro): Currently ranked #1 on some quality leaderboards (like TTS-Arena2) for its ultra-realistic performance across 80+ languages.
+## 👨‍💻 Author
+Built with a focus on real-time AI systems and premium user experience.
