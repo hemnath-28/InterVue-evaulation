@@ -9,7 +9,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 1. Get Session ID
     const urlParams = new URLSearchParams(window.location.search);
-    const sessionId = urlParams.get('sessionId');
+    let sessionId = urlParams.get('sessionId');
+    if (sessionId) {
+        sessionId = sessionId.trim().replace(/^['"]|['"]$/g, '');
+    }
 
     if (!sessionId) {
         showError("No session ID provided.");
@@ -30,11 +33,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 2. Fetch Session Results
     try {
-        const response = await fetch(`/api/interviews/${sessionId}/results`, { credentials: 'include' });
-        if (!response.ok) throw new Error("Failed to load results");
+        const response = await fetch(`/api/interviews/${sessionId}/results`, { 
+            headers: { 'Accept': 'application/json' },
+            credentials: 'include' 
+        });
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.message || `HTTP error ${response.status}`);
+        }
         const data = await response.json();
         
         const session = data.session;
+        if (!session) {
+            throw new Error("Invalid session data returned from server");
+        }
         
         // Render Overview
         targetRoleText.textContent = session.targetRole || 'Unknown';
@@ -97,7 +109,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     } catch (err) {
         console.error("Dashboard error:", err);
-        showError("Could not load interview results. Ensure you are logged in.");
+        showError(`Could not load interview results: ${err.message}. Ensure you are logged in.`);
     }
 
     function showError(msg) {
