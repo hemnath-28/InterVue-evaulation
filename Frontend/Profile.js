@@ -2,6 +2,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     const loadingState = document.getElementById('loadingState');
     const profileContent = document.getElementById('profileContent');
 
+    // ─── Helper: escape HTML to prevent XSS (declared first so all functions can use it) ───
+    function escHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
     // ─── Auth Guard ───────────────────────────────────────────────────────────
     let profileData;
     try {
@@ -19,11 +29,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const { user, sessions = [] } = profileData;
 
     // ─── 1. Hero Card ─────────────────────────────────────────────────────────
-    // Avatar initials
     const initials = (user.name || 'U').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
     document.getElementById('avatarInitials').textContent = initials;
 
-    // If user has a profile picture, show it instead of initials
     if (user.profilePic) {
         const avatarEl = document.getElementById('avatarEl');
         avatarEl.innerHTML = `<img src="${user.profilePic}" alt="Profile" class="w-full h-full object-cover rounded-full">`;
@@ -32,13 +40,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('userName').textContent = user.name || 'Unknown User';
     document.getElementById('userEmail').textContent = user.email || '—';
 
-    // Member since date
     if (user.createdAt) {
         const date = new Date(user.createdAt);
         document.getElementById('memberSince').textContent = `Member since ${date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`;
     }
 
-    // Provider badge
     if (user.provider) {
         const pb = document.getElementById('providerBadge');
         const icons = { google: '🔵', github: '⚫', local: '🔐' };
@@ -46,7 +52,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         pb.classList.remove('hidden');
     }
 
-    // Role badge
     if (user.role) {
         const rb = document.getElementById('roleBadge');
         rb.textContent = user.role;
@@ -64,100 +69,130 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('statAvgScore').textContent = avg;
     }
 
-    // ─── 3. Grab resume data (use first resume if multiple) ──────────────────
-    const resume = resumes.length > 0 ? resumes[0] : null;
+    // ─── 3. Resume Switcher & Render ──────────────────────────────────────────
+    // Always default to the most recent resume (last in array)
+    let activeResumeIndex = resumes.length > 0 ? resumes.length - 1 : -1;
 
-    // SKILLS
-    const skillsEl = document.getElementById('skillsContainer');
-    if (resume && resume.skills && resume.skills.length > 0) {
-        skillsEl.innerHTML = resume.skills.map(skill =>
-            `<span class="skill-chip inline-block px-3 py-1 bg-blue-50 text-blue-700 border border-blue-100 rounded-full text-xs font-semibold cursor-default">${escHtml(skill)}</span>`
-        ).join('');
-    } else {
-        skillsEl.innerHTML = `<p class="text-sm text-gray-400 italic">Upload a resume to see skills.</p>`;
+    // If user has multiple resumes, show a dropdown to switch between them
+    if (resumes.length > 1) {
+        const skillsCard = document.getElementById('skillsContainer').closest('.bg-white');
+        const switcherDiv = document.createElement('div');
+        switcherDiv.className = 'mb-4';
+        switcherDiv.innerHTML = `
+            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Viewing Resume</label>
+            <select id="resumeSwitcher" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-300">
+                ${resumes.map((r, i) => `
+                    <option value="${i}" ${i === activeResumeIndex ? 'selected' : ''}>
+                        ${escHtml(r.name || 'Resume')} &mdash; ${new Date(r.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </option>
+                `).join('')}
+            </select>
+        `;
+        skillsCard.insertBefore(switcherDiv, skillsCard.firstChild);
+
+        document.getElementById('resumeSwitcher').addEventListener('change', (e) => {
+            renderResumeData(resumes[parseInt(e.target.value)]);
+        });
     }
 
-    // EDUCATION
-    const educationEl = document.getElementById('educationContainer');
-    if (resume && resume.education && resume.education.length > 0) {
-        educationEl.innerHTML = resume.education.map(edu => `
-            <div class="flex gap-3">
-                <div class="flex-shrink-0 w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center mt-0.5">
-                    <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path></svg>
-                </div>
-                <div>
-                    <p class="font-semibold text-gray-900 text-sm">${escHtml(edu.institution || '—')}</p>
-                    <p class="text-gray-500 text-xs">${escHtml(edu.degree || '')} ${edu.field ? '· ' + escHtml(edu.field) : ''}</p>
-                    ${edu.year ? `<p class="text-gray-400 text-xs mt-0.5">${escHtml(edu.year)}</p>` : ''}
-                </div>
-            </div>
-        `).join('');
-    } else {
-        educationEl.innerHTML = `<p class="text-sm text-gray-400 italic">No education data found.</p>`;
-    }
+    // Initial render with the active resume
+    renderResumeData(resumes[activeResumeIndex] || null);
 
-    // ACHIEVEMENTS + CERTIFICATIONS
-    const achEl = document.getElementById('achievementsContainer');
-    const allAch = [
-        ...(resume && resume.achievements ? resume.achievements : []),
-        ...(resume && resume.certifications ? resume.certifications : [])
-    ];
-    if (allAch.length > 0) {
-        achEl.innerHTML = allAch.map(a => `
-            <div class="flex items-start gap-2">
-                <span class="flex-shrink-0 mt-1 text-emerald-500">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                </span>
-                <span class="text-sm text-gray-700">${escHtml(a)}</span>
-            </div>
-        `).join('');
-    } else {
-        achEl.innerHTML = `<p class="text-sm text-gray-400 italic">No achievements or certifications found.</p>`;
-    }
+    // ─── renderResumeData — fills all left-column sections ────────────────────
+    function renderResumeData(resume) {
 
-    // EXPERIENCE
-    const expEl = document.getElementById('experienceContainer');
-    if (resume && resume.experience && resume.experience.length > 0) {
-        expEl.innerHTML = resume.experience.map((exp, i) => `
-            <div class="relative pl-8 ${i < resume.experience.length - 1 ? 'pb-5 border-l-2 border-gray-100 ml-3' : ''}">
-                <div class="absolute left-0 top-1 w-6 h-6 rounded-full bg-blue-100 border-2 border-blue-500 flex items-center justify-center -ml-3">
-                    <span class="w-2 h-2 rounded-full bg-blue-500 block"></span>
-                </div>
-                <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                    <div class="flex flex-wrap justify-between items-start gap-2 mb-1">
-                        <p class="font-bold text-gray-900 text-sm">${escHtml(exp.role || '—')}</p>
-                        ${exp.duration ? `<span class="text-xs text-gray-400 font-medium bg-white border border-gray-200 px-2 py-0.5 rounded-full">${escHtml(exp.duration)}</span>` : ''}
+        // SKILLS
+        const skillsEl = document.getElementById('skillsContainer');
+        if (resume && resume.skills && resume.skills.length > 0) {
+            skillsEl.innerHTML = resume.skills.map(skill =>
+                `<span class="skill-chip inline-block px-3 py-1 bg-blue-50 text-blue-700 border border-blue-100 rounded-full text-xs font-semibold cursor-default">${escHtml(skill)}</span>`
+            ).join('');
+        } else {
+            skillsEl.innerHTML = `<p class="text-sm text-gray-400 italic">Upload a resume to see skills.</p>`;
+        }
+
+        // EDUCATION
+        const educationEl = document.getElementById('educationContainer');
+        if (resume && resume.education && resume.education.length > 0) {
+            educationEl.innerHTML = resume.education.map(edu => `
+                <div class="flex gap-3">
+                    <div class="flex-shrink-0 w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center mt-0.5">
+                        <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path></svg>
                     </div>
-                    <p class="text-sm font-semibold text-primary mb-2">${escHtml(exp.company || '—')}</p>
-                    ${exp.description ? `<p class="text-xs text-gray-600 leading-relaxed">${escHtml(exp.description)}</p>` : ''}
+                    <div>
+                        <p class="font-semibold text-gray-900 text-sm">${escHtml(edu.institution || '—')}</p>
+                        <p class="text-gray-500 text-xs">${escHtml(edu.degree || '')} ${edu.field ? '· ' + escHtml(edu.field) : ''}</p>
+                        ${edu.year ? `<p class="text-gray-400 text-xs mt-0.5">${escHtml(edu.year)}</p>` : ''}
+                    </div>
                 </div>
-            </div>
-        `).join('');
-    } else {
-        expEl.innerHTML = `<p class="text-sm text-gray-400 italic">No experience data found.</p>`;
-    }
+            `).join('');
+        } else {
+            educationEl.innerHTML = `<p class="text-sm text-gray-400 italic">No education data found.</p>`;
+        }
 
-    // PROJECTS
-    const projEl = document.getElementById('projectsContainer');
-    if (resume && resume.projects && resume.projects.length > 0) {
-        projEl.innerHTML = resume.projects.map(proj => `
-            <div class="rounded-xl border border-gray-200 p-4 hover:border-blue-200 hover:shadow-sm transition-all">
-                <p class="font-bold text-gray-900 text-sm mb-1">${escHtml(proj.name || '—')}</p>
-                ${proj.description ? `<p class="text-xs text-gray-500 mb-2 leading-relaxed">${escHtml(proj.description)}</p>` : ''}
-                ${proj.technologies && proj.technologies.length > 0
-                    ? `<div class="flex flex-wrap gap-1">${proj.technologies.map(t => `<span class="px-2 py-0.5 bg-gray-100 text-gray-600 rounded-md text-[11px] font-medium">${escHtml(t)}</span>`).join('')}</div>`
-                    : ''
-                }
-            </div>
-        `).join('');
-    } else {
-        projEl.innerHTML = `<p class="text-sm text-gray-400 italic">No projects found.</p>`;
+        // ACHIEVEMENTS + CERTIFICATIONS
+        const achEl = document.getElementById('achievementsContainer');
+        const allAch = [
+            ...(resume && resume.achievements ? resume.achievements : []),
+            ...(resume && resume.certifications ? resume.certifications : [])
+        ];
+        if (allAch.length > 0) {
+            achEl.innerHTML = allAch.map(a => `
+                <div class="flex items-start gap-2">
+                    <span class="flex-shrink-0 mt-1 text-emerald-500">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    </span>
+                    <span class="text-sm text-gray-700">${escHtml(a)}</span>
+                </div>
+            `).join('');
+        } else {
+            achEl.innerHTML = `<p class="text-sm text-gray-400 italic">No achievements or certifications found.</p>`;
+        }
+
+        // EXPERIENCE
+        const expEl = document.getElementById('experienceContainer');
+        if (resume && resume.experience && resume.experience.length > 0) {
+            expEl.innerHTML = resume.experience.map((exp, i) => `
+                <div class="relative pl-8 ${i < resume.experience.length - 1 ? 'pb-5 border-l-2 border-gray-100 ml-3' : ''}">
+                    <div class="absolute left-0 top-1 w-6 h-6 rounded-full bg-blue-100 border-2 border-blue-500 flex items-center justify-center -ml-3">
+                        <span class="w-2 h-2 rounded-full bg-blue-500 block"></span>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                        <div class="flex flex-wrap justify-between items-start gap-2 mb-1">
+                            <p class="font-bold text-gray-900 text-sm">${escHtml(exp.role || '—')}</p>
+                            ${exp.duration ? `<span class="text-xs text-gray-400 font-medium bg-white border border-gray-200 px-2 py-0.5 rounded-full">${escHtml(exp.duration)}</span>` : ''}
+                        </div>
+                        <p class="text-sm font-semibold text-primary mb-2">${escHtml(exp.company || '—')}</p>
+                        ${exp.description ? `<p class="text-xs text-gray-600 leading-relaxed">${escHtml(exp.description)}</p>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            expEl.innerHTML = `<p class="text-sm text-gray-400 italic">No experience data found.</p>`;
+        }
+
+        // PROJECTS
+        const projEl = document.getElementById('projectsContainer');
+        if (resume && resume.projects && resume.projects.length > 0) {
+            projEl.innerHTML = resume.projects.map(proj => `
+                <div class="rounded-xl border border-gray-200 p-4 hover:border-blue-200 hover:shadow-sm transition-all">
+                    <p class="font-bold text-gray-900 text-sm mb-1">${escHtml(proj.name || '—')}</p>
+                    ${proj.description ? `<p class="text-xs text-gray-500 mb-2 leading-relaxed">${escHtml(proj.description)}</p>` : ''}
+                    ${proj.technologies && proj.technologies.length > 0
+                        ? `<div class="flex flex-wrap gap-1">${proj.technologies.map(t => `<span class="px-2 py-0.5 bg-gray-100 text-gray-600 rounded-md text-[11px] font-medium">${escHtml(t)}</span>`).join('')}</div>`
+                        : ''
+                    }
+                </div>
+            `).join('');
+        } else {
+            projEl.innerHTML = `<p class="text-sm text-gray-400 italic">No projects found.</p>`;
+        }
     }
 
     // ─── 4. Interview History ─────────────────────────────────────────────────
     const sessEl = document.getElementById('sessionsContainer');
     if (sessions.length > 0) {
-        const rows = sessions.map(s => {
+        sessEl.innerHTML = sessions.map(s => {
             const scoreNum = s.overallScore || 0;
             const scoreColor = scoreNum >= 7 ? 'text-emerald-600 bg-emerald-50' : scoreNum >= 4 ? 'text-amber-600 bg-amber-50' : 'text-red-500 bg-red-50';
             const statusColor = s.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' : s.status === 'In Progress' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600';
@@ -184,21 +219,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
             `;
         }).join('');
-
-        sessEl.innerHTML = rows;
     }
 
     // ─── Show Profile ─────────────────────────────────────────────────────────
     loadingState.classList.add('hidden');
     profileContent.classList.remove('hidden');
-
-    // Helper: escape HTML to prevent XSS
-    function escHtml(str) {
-        if (!str) return '';
-        return String(str)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
-    }
 });
