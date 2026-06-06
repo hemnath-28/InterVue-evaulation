@@ -42,6 +42,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 1. Get Session ID from URL
     const urlParams = new URLSearchParams(window.location.search);
     sessionId = urlParams.get('sessionId');
+    if (sessionId) {
+        sessionId = sessionId.trim().replace(/^['"]|['"]$/g, '');
+    }
 
     if (!sessionId) {
         showError("No session ID found in URL. Please go back to setup.");
@@ -50,20 +53,32 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 2. Fetch Session Data
     try {
-        const response = await fetch(`/api/interviews/${sessionId}/results`, { credentials: 'include' });
-        if (!response.ok) throw new Error("Failed to load session data");
+        const response = await fetch(`/api/interviews/${sessionId}/results`, { 
+            headers: { 'Accept': 'application/json' },
+            credentials: 'include' 
+        });
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.message || `HTTP error ${response.status}`);
+        }
         const data = await response.json();
         
         // Flatten questions from all rounds into a single ordered array
+        if (!data.session || !Array.isArray(data.session.rounds)) {
+            throw new Error("Invalid session data returned from server");
+        }
+        
         data.session.rounds.forEach((round, rIndex) => {
-            round.questions.forEach((q, qIndex) => {
-                allQuestions.push({
-                    roundIndex: rIndex,
-                    questionIndex: qIndex,
-                    roundType: round.roundType,
-                    questionText: q.questionText
+            if (round.questions && Array.isArray(round.questions)) {
+                round.questions.forEach((q, qIndex) => {
+                    allQuestions.push({
+                        roundIndex: rIndex,
+                        questionIndex: qIndex,
+                        roundType: round.roundType,
+                        questionText: q.questionText
+                    });
                 });
-            });
+            }
         });
 
         if (allQuestions.length === 0) {
@@ -74,8 +89,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         initSocket();
 
     } catch (err) {
-        console.error(err);
-        showError("Could not retrieve interview data. Make sure you are logged in.");
+        console.error("Failed to load interview session:", err);
+        showError(`Could not retrieve interview data: ${err.message}. Make sure you are logged in.`);
     }
 
     function showError(msg) {
