@@ -1,5 +1,5 @@
 const mongoose = require("mongoose")
-
+// Resume Schema [user,name,email,phone,skills,experience,education,projects,certifications,achievements,resumeUrl] Using pdfParse to Extract
 const resumeSchema = new mongoose.Schema({
 
     user: {

@@ -1,15 +1,8 @@
 const express = require('express');
 const passport = require('passport');
 const UserRoute = express.Router();
-const { registerUser, getProfile } = require("../controllers/authController");
-
-// Middleware to protect routes
-const ensureAuthenticated = (req, res, next) => {
-    if (req.isAuthenticated()) {
-        return next();
-    }
-    res.redirect('/');
-};
+const { registerUser, loginUser, getProfile } = require("../controllers/authController");
+const { jwtAuth } = require("../middleware/Authmiddleware");
 
 // =======================
 // LOCAL AUTH ROUTES
@@ -18,11 +11,8 @@ const ensureAuthenticated = (req, res, next) => {
 // Register
 UserRoute.post("/register", registerUser);
 
-// Login — redirect to Profile page, not the JSON API endpoint
-UserRoute.post("/login", passport.authenticate('local', {
-    successRedirect: '/Profile.html',
-    failureRedirect: '/failed'
-}));
+// Login — handles credential checks and cookies redirect
+UserRoute.post("/login", loginUser);
 
 // =======================
 // OAUTH ROUTES
@@ -33,6 +23,9 @@ UserRoute.get("/google", passport.authenticate("google", { scope: ["profile", "e
 UserRoute.get("/google/callback", passport.authenticate("google", {
     failureRedirect: "/failed"
 }), (req, res) => {
+    const { generateTokens, setAuthCookies } = require("../utils/jwtHelper");
+    const tokens = generateTokens(req.user);
+    setAuthCookies(res, tokens);
     res.redirect("/Profile.html");
 });
 
@@ -41,6 +34,9 @@ UserRoute.get("/github", passport.authenticate("github", { scope: ["user:email"]
 UserRoute.get("/github/callback", passport.authenticate("github", {
     failureRedirect: "/failed"
 }), (req, res) => {
+    const { generateTokens, setAuthCookies } = require("../utils/jwtHelper");
+    const tokens = generateTokens(req.user);
+    setAuthCookies(res, tokens);
     res.redirect("/Profile.html");
 });
 
@@ -49,12 +45,13 @@ UserRoute.get("/github/callback", passport.authenticate("github", {
 // =======================
 
 // Profile (Protected)
-UserRoute.get("/profile", ensureAuthenticated, getProfile);
+UserRoute.get("/profile", jwtAuth, getProfile);
 
 // Logout
 UserRoute.get("/logout", (req, res, next) => {
+    const { clearAuthCookies } = require("../utils/jwtHelper");
+    clearAuthCookies(res);
     req.logout((err) => {
-        if (err) { return next(err); }
         res.redirect('/');
     });
 });

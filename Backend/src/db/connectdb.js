@@ -1,8 +1,9 @@
 const mongoose = require('mongoose')
 const path = require('path')
 
-require('dotenv').config({ path: path.join(__dirname, '..', '.env') })
+require('dotenv').config({ path: "../.env" })
 
+// Connection to Database and exporting it
 const connection = async () => {
     try {
         const mongoUrl = process.env.MONGO_URI

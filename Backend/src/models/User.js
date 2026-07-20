@@ -1,5 +1,6 @@
 const mongoose = require("mongoose")
 
+// User Schema [provider,googleid,githubid,resume,role,profile]
 const UserSchema = new mongoose.Schema({
 
     name: {

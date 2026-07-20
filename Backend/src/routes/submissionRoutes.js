@@ -2,7 +2,7 @@ const express = require("express")
 
 const router = express.Router()
 
-const protect = require("../middleware/authMiddleware")
+const { jwtAuth: protect } = require("../middleware/Authmiddleware")
 
 const {
 

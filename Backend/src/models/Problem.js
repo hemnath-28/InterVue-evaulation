@@ -13,37 +13,9 @@ const ProblemSchema = new mongoose.Schema({
         required: true
     },
 
-    // DSA / Backend / Frontend
-
-    topic: {
-
-        type: String,
-
-        enum: [
-
-            "DSA",
-
-            "Backend",
-
-            "Frontend",
-
-            "System Design",
-
-            "Networking",
-
-            
-
-        ],
-
-        required: true
-    },
-
     difficulty: {
-
         type: String,
-
         enum: ["Easy", "Medium", "Hard"],
-
         required: true
     },
 
@@ -62,15 +34,31 @@ const ProblemSchema = new mongoose.Schema({
         output: String,
 
         explanation: String
-
     }],
+
+    starterCode: {
+
+        python: String,
+
+        javascript: String,
+
+        cpp: String
+    },
+
+    supportedLanguages: [{
+        type: String
+    }],
+
+    timeLimit: {
+        type: Number,
+        default: 2
+    },
 
     visibleTestCases: [{
 
         input: String,
 
         expectedOutput: String
-
     }],
 
     hiddenTestCases: [{
@@ -78,13 +66,10 @@ const ProblemSchema = new mongoose.Schema({
         input: String,
 
         expectedOutput: String
-
     }]
 
 }, {
     timestamps: true
 })
 
-const Problem = mongoose.model("Problem", ProblemSchema)
-
-module.exports = Problem
+module.exports= mongoose.model("Problem", ProblemSchema)

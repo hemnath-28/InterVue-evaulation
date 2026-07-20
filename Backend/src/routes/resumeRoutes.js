@@ -3,39 +3,35 @@ const multer  = require("multer")
 
 const router = express.Router()
 
-const upload = multer({ storage: multer.memoryStorage() })
+// Store file in memory as Buffer (Gemini reads it directly — no disk writes needed)
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 10 * 1024 * 1024 } // 10 MB max
+})
 
 const {
     uploadResume,
-    affindaWebhook,
-    checkAffindaDocument,
-    processDocument
+    getMyResumes,
+    getResumeById,
+    deleteResume
 } = require("../controllers/resumeControleer")
 
-// Middleware to ensure user is authenticated
-const ensureAuthenticated = (req, res, next) => {
-    if (req.isAuthenticated && req.isAuthenticated()) {
-        return next();
-    }
-    return res.status(401).json({ message: "Unauthorized. Please log in first." });
-};
+const { jwtAuth } = require("../middleware/Authmiddleware")
 
 // POST /api/resume/upload
-// Submits PDF to Affinda (async). Returns 202 with Affinda document identifier.
-router.post("/upload", ensureAuthenticated, upload.single("resume"), uploadResume)
+// Upload a PDF → Gemini parses it → saved to MongoDB
+router.post("/upload", jwtAuth, upload.single("resume"), uploadResume)
 
-// POST /api/resume/webhook
-// Affinda calls this when resume parsing is complete.
-// Receives full parsed data → Gemini Flash → MongoDB
-router.post("/webhook", affindaWebhook)
+// GET /api/resume/my
+// Get all resumes for the logged-in user
+router.get("/my", jwtAuth, getMyResumes)
 
-// GET /api/resume/check/:identifier
-// Fetch what Affinda parsed for a given document (debug / verification)
-router.get("/check/:identifier", checkAffindaDocument)
+// GET /api/resume/:id
+// Get a specific resume by ID
+router.get("/:id", jwtAuth, getResumeById)
 
-// POST /api/resume/process/:identifier
-// Manual trigger: Fetch Affinda doc → Gemini → MongoDB (for local dev when webhook can't reach localhost)
-router.post("/process/:identifier", processDocument)
+// DELETE /api/resume/:id
+// Delete a resume by ID
+router.delete("/:id", jwtAuth, deleteResume)
 
 module.exports = router
-
