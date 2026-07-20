@@ -1,4 +1,5 @@
 const Problem = require("../models/Problem")
+const { selectProblemForRole } = require("../services/problemSelectorService")
 
 // ======================================
 // CREATE PROBLEM
@@ -147,57 +148,50 @@ const deleteProblem = async (req, res) => {
     }
 }
 
-// Randome problem question for their Roles
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/problems/random
+// Query params:
+//   ?role=Frontend Developer  → AI selects best DSA topic for the role
+//   ?tag=Arrays&difficulty=Easy → manual filter (fallback / admin use)
+// ─────────────────────────────────────────────────────────────────────────────
 const getRandomProblem = async (req, res) => {
 
     try {
+        const { role, difficulty, tag } = req.query
 
-        const { difficulty, tag } = req.query
+        // ── Role-based AI selection (primary path for CodingRoom) ─────────────
+        if (role) {
+            console.log(`[ProblemController] Role-based selection for: "${role}"`)
+            const problem = await selectProblemForRole(role)
 
-        let matchStage = {}
-
-        // FILTER BY DIFFICULTY
-
-        if (difficulty) {
-
-            matchStage.difficulty = difficulty
-        }
-
-        // FILTER BY TAG
-
-        if (tag) {
-
-            matchStage.tags = tag
-        }
-
-        // RANDOM PROBLEM
-
-        const problems = await Problem.aggregate([
-
-            {
-                $match: matchStage
-            },
-
-            {
-                $sample: { size: 1 }
+            if (!problem) {
+                return res.status(404).json({
+                    message: "No problems found in the database. Please seed problems first."
+                })
             }
 
+            return res.status(200).json({ problem })
+        }
+
+        // ── Manual tag/difficulty filter (fallback) ───────────────────────────
+        let matchStage = {}
+        if (difficulty) matchStage.difficulty = difficulty
+        if (tag)        matchStage.tags = tag
+
+        const problems = await Problem.aggregate([
+            { $match: matchStage },
+            { $sample: { size: 1 } }
         ])
 
         if (problems.length === 0) {
-
-            return res.status(404).json({
-                message: "No problem found"
-            })
+            return res.status(404).json({ message: "No problem found" })
         }
 
-        res.status(200).json(problems[0])
+        return res.status(200).json({ problem: problems[0] })
 
     } catch (error) {
-
-        res.status(500).json({
-            message: "Server Error"
-        })
+        console.error("[ProblemController] getRandomProblem ERROR:", error.message)
+        res.status(500).json({ message: "Server Error", error: error.message })
     }
 }
 

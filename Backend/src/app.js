@@ -1,13 +1,16 @@
 const express = require('express');
 require('dotenv').config();
 const path = require('path');
+const cookieParser = require('cookie-parser');
 const app = express();
 const passport = require('passport');
 const session = require('express-session');
+const { createProxyMiddleware } = require('http-proxy-middleware');
 
 // Parse URL-encoded bodies for form submissions
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(cookieParser());
 
 // Configure Passport
 require('./config/passport')(passport);
@@ -32,6 +35,26 @@ app.get("/", (req, res) => {
 });
 
 app.use(express.static(frontendPath, { index: false }));
+
+// ─── PROXY: Forward /api/code/* → Code-Judger microservice (port 4000) ───────
+// Code-Judger handles DSA problem execution and judging.
+// Run Code-Judger separately: cd Code-Judger/backend && npm run dev
+const CODE_JUDGER_URL = process.env.CODE_JUDGER_URL || 'http://localhost:4000';
+app.use(
+    '/api/code',
+    createProxyMiddleware({
+        target: CODE_JUDGER_URL,
+        changeOrigin: true,
+        on: {
+            error: (err, req, res) => {
+                console.error('[Proxy] Code-Judger unreachable:', err.message);
+                res.status(502).json({
+                    message: 'Code-Judger service is unavailable. Please ensure it is running on port 4000.'
+                });
+            }
+        }
+    })
+);
 
 // ─── FIX: Redirect to login.html with an error flag instead of raw HTML ───
 app.get("/failed", (req, res) => {
@@ -59,6 +82,9 @@ app.use("/api/users", userRoutes);
 
 const resumeRoutes = require("./routes/resumeRoutes");
 app.use("/api/resume", resumeRoutes);
+
+const atsRoutes = require("./routes/atsRoutes");
+app.use("/api/ats", atsRoutes);
 
 const interviewRoutes = require("./routes/interviewRoutes");
 app.use("/api/interviews", interviewRoutes);
