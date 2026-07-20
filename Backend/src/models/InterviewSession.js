@@ -69,6 +69,20 @@ const InterviewSessionSchema = new mongoose.Schema({
         required: true
     },
 
+    // INTERVIEW MODE — what the user chose at setup
+    // 'coding'  → only coding round
+    // 'voice'   → only voice interview
+    // 'both'    → coding first, then voice interview
+
+    mode: {
+
+        type: String,
+
+        enum: ["coding", "voice", "both"],
+
+        default: "voice"
+    },
+
     // OVERALL STATUS
 
     status: {
@@ -99,10 +113,74 @@ const InterviewSessionSchema = new mongoose.Schema({
         default: 0
     },
 
-    // AI FINAL FEEDBACK
+    // AI FINAL FEEDBACK (voice round feedback from Groq)
 
     overallFeedback: {
 
+        type: String
+    },
+
+    // ─── CODING ROUND ────────────────────────────────────────────────────────
+    // Populated when the user completes a DSA challenge in CodingRoom.html
+
+    codingRound: {
+
+        // Reference to the Problem document
+        problemId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Problem"
+        },
+
+        problemTitle: {
+            type: String
+        },
+
+        // The code the user submitted
+        submittedCode: {
+            type: String
+        },
+
+        // Language used (javascript, python, cpp)
+        language: {
+            type: String
+        },
+
+        // Judge results
+        testCasesPassed: {
+            type: Number,
+            default: 0
+        },
+
+        totalTestCases: {
+            type: Number,
+            default: 0
+        },
+
+        // Normalized score 0–10: (testCasesPassed / totalTestCases) × 10
+        rawScore: {
+            type: Number,
+            default: 0
+        },
+
+        status: {
+            type: String,
+            enum: ["Pending", "Completed"],
+            default: "Pending"
+        }
+    },
+
+    // ─── FINAL COMBINED SCORE ────────────────────────────────────────────────
+    // mode = 'coding' → finalScore = codingRound.rawScore
+    // mode = 'voice'  → finalScore = overallScore
+    // mode = 'both'   → finalScore = (codingRound.rawScore × 0.4) + (overallScore × 0.6)
+
+    finalScore: {
+        type: Number,
+        default: 0
+    },
+
+    // Combined AI summary shown on Dashboard for 'both' mode
+    finalFeedback: {
         type: String
     },
 
