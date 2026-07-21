@@ -1,6 +1,9 @@
 const { GoogleGenAI } = require("@google/genai");
 const Problem = require("../models/Problem");
-
+// Three Methods 
+// 1->From Databse
+//2-> New Role not specified in Database Ask gemini
+//3->any error fallback random problem
 const ai = new GoogleGenAI({});
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -45,7 +48,7 @@ Examples of valid topics: Arrays, Strings, Trees, Graphs, Dynamic Programming, H
 
     try {
         const result = await ai.models.generateContent({
-            model: "gemini-3.5-flash",
+            model: "gemini-2.0-flash",
             contents: prompt
         });
         return result.text.trim();
@@ -72,15 +75,16 @@ const selectProblemForRole = async (targetRole) => {
 
     console.log(`[ProblemSelector] Trying topics: ${topics.join(", ")}`);
 
-    // Step 2: Try to find a problem with matching tag
+    // Step 2: Try to find a problem with matching topic
+    // Code-Judger uses 'topic' array field (not 'tags')
     for (const topic of topics) {
-        const count = await Problem.countDocuments({ tags: topic });
+        const count = await Problem.countDocuments({ topic: topic });
         if (count > 0) {
-            // Pick a random one from this tag
+            // Pick a random one from this topic
             const skip = Math.floor(Math.random() * count);
-            const problem = await Problem.findOne({ tags: topic }).skip(skip);
+            const problem = await Problem.findOne({ topic: topic }).skip(skip);
             if (problem) {
-                console.log(`[ProblemSelector] Found problem: "${problem.title}" (tag: ${topic})`);
+                console.log(`[ProblemSelector] Found problem: "${problem.title}" (topic: ${topic})`);
                 return problem;
             }
         }
