@@ -1,16 +1,20 @@
 const Resume = require("../models/Resume");
 const InterviewSession = require("../models/InterviewSession");
 const { generateQuestions } = require("../services/interviewService");
+const { evaluateFullSession } = require("../services/evaluationService");
 
 const generateInterview = async (req, res) => {
     try {
-        const { resumeId, targetRole, experienceLevel } = req.body;
+        const { resumeId, targetRole, experienceLevel, mode } = req.body;
 
         if (!resumeId || !targetRole || !experienceLevel) {
             return res.status(400).json({
                 message: "resumeId, targetRole, and experienceLevel are required fields."
             });
         }
+
+        // Validate mode — default to 'voice' for backward compatibility
+        const interviewMode = ['coding', 'voice', 'both'].includes(mode) ? mode : 'voice';
 
         // We assume the user is authenticated via protect middleware
         // TEMPORARY: For testing without auth, provide a dummy MongoDB ObjectId
@@ -65,8 +69,13 @@ const generateInterview = async (req, res) => {
             user: userId,
             targetRole: targetRole,
             experienceLevel: experienceLevel,
+            mode: interviewMode,
             status: "Started",
-            rounds: rounds
+            rounds: rounds,
+            // Pre-initialize codingRound if mode involves coding
+            ...(interviewMode !== 'voice' && {
+                codingRound: { status: 'Pending' }
+            })
         });
 
         console.log("[InterviewController] InterviewSession created successfully.");
@@ -108,7 +117,70 @@ const saveAnswer = async (req, res) => {
     }
 };
 
-const { evaluateFullSession } = require("../services/evaluationService");
+// ───────────────────────────────────────────────────────────────────────────────
+// POST /api/interviews/:id/coding-result
+// Saves the coding round result and computes finalScore if voice is also done
+// ───────────────────────────────────────────────────────────────────────────────
+const saveCodingResult = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { problemId, problemTitle, submittedCode, language, testCasesPassed, totalTestCases } = req.body;
+
+        if (testCasesPassed === undefined || totalTestCases === undefined) {
+            return res.status(400).json({ message: "testCasesPassed and totalTestCases are required." });
+        }
+
+        const session = await InterviewSession.findById(id);
+        if (!session) return res.status(404).json({ message: "Session not found." });
+
+        // Normalize coding score to 0–10
+        const rawScore = totalTestCases > 0
+            ? parseFloat(((testCasesPassed / totalTestCases) * 10).toFixed(2))
+            : 0;
+
+        // Save coding round data
+        session.codingRound = {
+            problemId:       problemId || null,
+            problemTitle:    problemTitle || "",
+            submittedCode:   submittedCode || "",
+            language:        language || "",
+            testCasesPassed: testCasesPassed,
+            totalTestCases:  totalTestCases,
+            rawScore:        rawScore,
+            status:          "Completed"
+        };
+
+        // Compute finalScore based on mode
+        if (session.mode === 'coding') {
+            // Coding only — finalScore = coding score
+            session.finalScore = rawScore;
+            session.status = "Completed";
+        } else if (session.mode === 'both' && session.status === 'Completed') {
+            // Both done — combine scores (40% coding + 60% voice)
+            session.finalScore = parseFloat(
+                ((rawScore * 0.4) + (session.overallScore * 0.6)).toFixed(2)
+            );
+        } else {
+            // 'both' but voice not done yet — store coding score for later
+            session.finalScore = rawScore; // temporary until voice completes
+        }
+
+        await session.save();
+
+        console.log(`[InterviewController] Coding result saved. rawScore: ${rawScore}, finalScore: ${session.finalScore}`);
+
+        return res.status(200).json({
+            message: "Coding result saved successfully.",
+            rawScore,
+            finalScore: session.finalScore,
+            session
+        });
+
+    } catch (error) {
+        console.error("[InterviewController] saveCodingResult ERROR:", error);
+        return res.status(500).json({ message: "Failed to save coding result", error: error.message });
+    }
+};
 
 const evaluateSession = async (req, res) => {
     try {
@@ -119,7 +191,7 @@ const evaluateSession = async (req, res) => {
 
         const evaluation = await evaluateFullSession(session);
 
-        // Update session with evaluation results
+        // Update session with voice evaluation results
         session.overallScore = evaluation.overallScore;
         session.overallFeedback = evaluation.overallFeedback;
         session.status = "Completed";
@@ -135,6 +207,26 @@ const evaluateSession = async (req, res) => {
                     }
                 });
             });
+        }
+
+        // ── Compute finalScore based on interview mode ───────────────────────────
+        const voiceScore = evaluation.overallScore;
+
+        if (session.mode === 'voice') {
+            // Voice only — finalScore = voice score
+            session.finalScore = parseFloat(voiceScore.toFixed(2));
+
+        } else if (session.mode === 'both' && session.codingRound?.status === 'Completed') {
+            // Both done — combine: 40% coding + 60% voice
+            const codingScore = session.codingRound.rawScore;
+            session.finalScore = parseFloat(
+                ((codingScore * 0.4) + (voiceScore * 0.6)).toFixed(2)
+            );
+            session.finalFeedback = `Combined Score: Coding (${codingScore}/10 × 40%) + Voice (${voiceScore}/10 × 60%) = ${session.finalScore}/10`;
+
+        } else {
+            // 'both' but coding not completed yet — just store voice score
+            session.finalScore = parseFloat(voiceScore.toFixed(2));
         }
 
         await session.save();
@@ -161,6 +253,7 @@ const getSessionResults = async (req, res) => {
 module.exports = {
     generateInterview,
     saveAnswer,
+    saveCodingResult,
     evaluateSession,
     getSessionResults
 };

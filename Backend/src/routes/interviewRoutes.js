@@ -2,7 +2,8 @@ const express = require("express");
 const router = express.Router();
 const { 
     generateInterview, 
-    saveAnswer, 
+    saveAnswer,
+    saveCodingResult,
     evaluateSession, 
     getSessionResults 
 } = require("../controllers/interviewController");
@@ -13,6 +14,10 @@ router.post("/generate", jwtAuth, generateInterview);
 
 // POST /api/interviews/:id/answer
 router.post("/:id/answer", jwtAuth, saveAnswer);
+
+// POST /api/interviews/:id/coding-result
+// Saves coding round result and computes finalScore
+router.post("/:id/coding-result", jwtAuth, saveCodingResult);
 
 // POST /api/interviews/:id/evaluate
 router.post("/:id/evaluate", jwtAuth, evaluateSession);
