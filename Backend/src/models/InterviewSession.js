@@ -125,10 +125,9 @@ const InterviewSessionSchema = new mongoose.Schema({
 
     codingRound: {
 
-        // Reference to the Problem document
+        // Reference to the Problem document ID from Code-Judger
         problemId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Problem"
+            type: mongoose.Schema.Types.ObjectId
         },
 
         problemTitle: {
@@ -302,10 +301,7 @@ const InterviewSessionSchema = new mongoose.Schema({
         // CODING PROBLEMS
 
         problems: [{
-
-            type: mongoose.Schema.Types.ObjectId,
-
-            ref: "Problem"
+            type: mongoose.Schema.Types.ObjectId
         }],
 
         // CHAT / CONVERSATION
