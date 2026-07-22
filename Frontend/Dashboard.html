@@ -50,7 +50,7 @@
 
     <div id="dashboardContent" class="hidden flex-col gap-8">
         
-        <!-- Score Overview -->
+        <!-- Final Score Overview -->
         <section class="bg-white rounded-2xl border border-gray-200 shadow-xl shadow-gray-200/50 p-8 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden">
             <div class="absolute top-0 left-0 w-2 h-full bg-primary"></div>
             
@@ -61,9 +61,12 @@
                 </div>
             </div>
 
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">Interview Completed</h1>
-                <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Target Role: <span id="targetRoleText" class="text-gray-800"></span> • Level: <span id="expLevelText" class="text-gray-800"></span></p>
+            <div class="flex-grow">
+                <h1 class="text-3xl font-bold text-gray-900 mb-1">Interview Completed</h1>
+                <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                  Target Role: <span id="targetRoleText" class="text-gray-800"></span> &bull;
+                  Level: <span id="expLevelText" class="text-gray-800"></span>
+                </p>
                 <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
                     <h3 class="text-sm font-bold text-gray-900 mb-1">AI Overall Feedback</h3>
                     <p id="overallFeedback" class="text-gray-600 leading-relaxed text-sm">Loading feedback...</p>
@@ -71,15 +74,79 @@
             </div>
         </section>
 
-        <!-- Detailed Breakdown -->
-        <section>
-            <h2 class="text-2xl font-bold text-gray-900 mb-6">Question Breakdown</h2>
+        <!-- Score Breakdown (shown only when relevant) -->
+        <section id="scoreBreakdown" class="hidden">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Score Breakdown</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+                <!-- Coding Score Card -->
+                <div id="codingScoreCard" class="hidden bg-amber-50 border border-amber-200 rounded-2xl p-6 text-center">
+                    <p class="text-2xl mb-1">🧠</p>
+                    <p class="text-xs font-bold text-amber-700 uppercase tracking-wider mb-2">Coding Round</p>
+                    <p id="codingScoreVal" class="text-4xl font-extrabold text-amber-600">--</p>
+                    <p class="text-xs text-amber-500 mt-1">/ 10</p>
+                    <p id="codingTestDetail" class="text-xs text-amber-600 mt-2 font-medium"></p>
+                    <p class="text-xs text-gray-500 mt-2">Weight: 40%</p>
+                </div>
+
+                <!-- Voice Score Card -->
+                <div id="voiceScoreCard" class="hidden bg-blue-50 border border-blue-200 rounded-2xl p-6 text-center">
+                    <p class="text-2xl mb-1">🎙️</p>
+                    <p class="text-xs font-bold text-blue-700 uppercase tracking-wider mb-2">Voice Round</p>
+                    <p id="voiceScoreVal" class="text-4xl font-extrabold text-primary">--</p>
+                    <p class="text-xs text-blue-500 mt-1">/ 10</p>
+                    <p class="text-xs text-gray-500 mt-2">Weight: 60%</p>
+                </div>
+
+                <!-- Final Score Card -->
+                <div id="finalScoreCard" class="hidden bg-emerald-50 border border-emerald-200 rounded-2xl p-6 text-center">
+                    <p class="text-2xl mb-1">🏆</p>
+                    <p class="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-2">Final Score</p>
+                    <p id="finalScoreVal" class="text-4xl font-extrabold text-emerald-600">--</p>
+                    <p class="text-xs text-emerald-500 mt-1">/ 10</p>
+                    <p id="finalScoreFormula" class="text-xs text-gray-500 mt-2"></p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Coding Round Summary (if coding was done) -->
+        <section id="codingRoundSection" class="hidden bg-white rounded-2xl border border-amber-200 shadow-sm p-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">🧠 Coding Round Summary</h2>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                    <span class="text-xs font-bold text-gray-400 uppercase">Problem</span>
+                    <p id="codingProblemTitle" class="text-gray-800 font-semibold mt-1"></p>
+                </div>
+                <div>
+                    <span class="text-xs font-bold text-gray-400 uppercase">Language</span>
+                    <p id="codingLanguage" class="text-gray-800 font-semibold mt-1 capitalize"></p>
+                </div>
+                <div>
+                    <span class="text-xs font-bold text-gray-400 uppercase">Test Cases</span>
+                    <p id="codingTestCases" class="text-gray-800 font-semibold mt-1"></p>
+                </div>
+                <div>
+                    <span class="text-xs font-bold text-gray-400 uppercase">Score</span>
+                    <p id="codingFinalScore" class="text-gray-800 font-semibold mt-1"></p>
+                </div>
+            </div>
+            <div class="mt-4">
+                <span class="text-xs font-bold text-gray-400 uppercase">Submitted Code</span>
+                <pre id="codingSubmittedCode" class="mt-2 bg-gray-900 text-gray-100 rounded-xl p-4 text-xs font-mono overflow-x-auto max-h-48 whitespace-pre-wrap"></pre>
+            </div>
+        </section>
+
+        <!-- Voice Round Breakdown -->
+        <section id="voiceRoundSection" class="hidden">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">🎙️ Voice Round Breakdown</h2>
             <div id="questionsContainer" class="space-y-6">
                 <!-- Dynamically populated by JS -->
             </div>
         </section>
 
-    </div>
+
+
 
   </main>
 

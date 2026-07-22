@@ -26,14 +26,49 @@ const registerUser = async (req, res, next) => {
             provider: 'local'
         });
 
-        // Log the user in after registration and redirect to Profile page
-        req.login(user, (err) => {
-            if (err) return next(err);
-            res.redirect("/Profile.html");
-        });
+        // Set JWT Auth Cookies
+        const { generateTokens, setAuthCookies } = require("../utils/jwtHelper");
+        const tokens = generateTokens(user);
+        setAuthCookies(res, tokens);
+        res.redirect("/Profile.html");
 
     } catch (err) {
         res.status(500).json({ message: "Server Error" });
+    }
+}
+
+// Login User (Custom JWT handler)
+const loginUser = async (req, res, next) => {
+    try {
+        const { email, password } = req.body;
+
+        if (!email || !password) {
+            return res.redirect("/failed");
+        }
+
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.redirect("/failed");
+        }
+
+        if (user.provider !== 'local' || !user.password) {
+            return res.redirect("/failed");
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.redirect("/failed");
+        }
+
+        // Set JWT Auth Cookies
+        const { generateTokens, setAuthCookies } = require("../utils/jwtHelper");
+        const tokens = generateTokens(user);
+        setAuthCookies(res, tokens);
+        res.redirect("/Profile.html");
+
+    } catch (err) {
+        console.error("[Login Error]", err.message);
+        res.redirect("/failed");
     }
 }
 
@@ -64,5 +99,6 @@ const getProfile = async (req, res) => {
 
 module.exports = {
     registerUser,
+    loginUser,
     getProfile
 }
