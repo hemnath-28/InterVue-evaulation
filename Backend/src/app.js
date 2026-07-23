@@ -7,6 +7,25 @@ const passport = require('passport');
 const session = require('express-session');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
+// ─── PROXY: Forward /api/code/* → Code-Judger microservice (port 4000) ───────
+// Must be BEFORE express.json() so the proxy can read the untouched body stream
+const CODE_JUDGER_URL = process.env.CODE_JUDGER_URL || 'http://localhost:4000';
+app.use(
+    '/api/code',
+    createProxyMiddleware({
+        target: CODE_JUDGER_URL,
+        changeOrigin: true,
+        on: {
+            error: (err, req, res) => {
+                console.error('[Proxy] Code-Judger unreachable:', err.message);
+                res.status(502).json({
+                    message: 'Code-Judger service is unavailable. Please ensure it is running on port 4000.'
+                });
+            }
+        }
+    })
+);
+
 // Parse URL-encoded bodies for form submissions
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -36,25 +55,6 @@ app.get("/", (req, res) => {
 
 app.use(express.static(frontendPath, { index: false }));
 
-// ─── PROXY: Forward /api/code/* → Code-Judger microservice (port 4000) ───────
-// Code-Judger handles DSA problem execution and judging.
-// Run Code-Judger separately: cd Code-Judger/backend && npm run dev
-const CODE_JUDGER_URL = process.env.CODE_JUDGER_URL || 'http://localhost:4000';
-app.use(
-    '/api/code',
-    createProxyMiddleware({
-        target: CODE_JUDGER_URL,
-        changeOrigin: true,
-        on: {
-            error: (err, req, res) => {
-                console.error('[Proxy] Code-Judger unreachable:', err.message);
-                res.status(502).json({
-                    message: 'Code-Judger service is unavailable. Please ensure it is running on port 4000.'
-                });
-            }
-        }
-    })
-);
 
 // ─── FIX: Redirect to login.html with an error flag instead of raw HTML ───
 app.get("/failed", (req, res) => {
@@ -71,8 +71,7 @@ const authRoutes = require("./routes/authRoutes");
 app.use("/api/auth", authRoutes);
 
 // Other Routes
-const problemRoutes = require("./routes/problemRoutes");
-app.use("/api/problems", problemRoutes);
+
 
 const submissionRoutes = require("./routes/submissionRoutes");
 app.use("/api/submissions", submissionRoutes);
