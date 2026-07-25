@@ -98,7 +98,7 @@ Evaluate the candidate's overall performance.
 Return ONLY a valid JSON object with the exact following structure. Do not include markdown code blocks or any other text.
 {
    "overallScore": <number from 1 to 10, representing the overall interview score>,
-   "overallFeedback": "<string: a comprehensive summary of their performance>",
+   "overallFeedback": "<string: a detailed, comprehensive summary of their overall performance. You MUST write at least 3 to 4 full sentences discussing their technical alignment with the target role, key strengths, communication clarity, and major areas of improvement. Do not make this a single line.>",
    "questionEvaluations": [
        {
            "questionText": "<string: the exact question text>",
