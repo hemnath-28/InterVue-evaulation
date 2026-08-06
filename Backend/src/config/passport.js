@@ -70,8 +70,11 @@ module.exports = function(passport) {
             // GitHub might not return email if private, but 'user:email' scope tries.
             // Provide a fallback email if it doesn't exist.
             const githubId = profile.id;
+            const userEmail = (profile.emails && profile.emails.length > 0 && profile.emails[0].value)
+                ? profile.emails[0].value
+                : `${profile.username || profile.id}@github.noreply`;
 
-            console.log("passport Github return json",profile)
+            console.log("passport Github return json", profile);
             // Check if user exists by githubId
             let user = await User.findOne({ githubId: githubId });
             if (user) {
@@ -79,8 +82,8 @@ module.exports = function(passport) {
             } else {
                 // Create a new user
                 user = await User.create({
-                    name: profile.displayName || profile.username,
-                    email: email,
+                    name: profile.displayName || profile.username || "GitHub User",
+                    email: userEmail,
                     provider: 'github',
                     githubId: profile.id,
                     profilePic: (profile.photos && profile.photos.length > 0) ? profile.photos[0].value : ""
