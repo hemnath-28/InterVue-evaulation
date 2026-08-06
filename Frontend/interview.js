@@ -165,27 +165,54 @@ document.addEventListener('DOMContentLoaded', () => {
             const targetRole = targetRoleSelect.value;
             const experienceLevel = experienceLevelSelect.value;
 
+            // Read the selected interview mode (coding / voice / both)
+            const selectedModeRadio = document.querySelector('input[name="interviewMode"]:checked');
+            const mode = selectedModeRadio ? selectedModeRadio.value : 'voice';
+
             startInterviewBtn.disabled = true;
             startStatus.innerHTML = '<span style="color: #3b82f6;">Generating AI Interview Questions...</span>';
 
             try {
                 const response = await fetch('/api/interviews/generate', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
-                    body: JSON.stringify({ resumeId, targetRole, experienceLevel })
+                    body: JSON.stringify({ resumeId, targetRole, experienceLevel, mode })
                 });
 
                 const data = await response.json();
 
                 if (response.ok) {
-                    startStatus.innerHTML = '<span style="color: #10b981;">Ready! Redirecting to Interview Room...</span>';
-                    // Redirect to the interview room with the session ID
-                    setTimeout(() => {
-                        window.location.href = `InterviewRoom.html?sessionId=${data.interviewSessionId}`;
-                    }, 1000);
+                    const sessionId = data.interviewSessionId;
+
+                    // Store everything needed by CodingRoom + InterviewRoom in sessionStorage
+                    sessionStorage.setItem('interviewSessionId', sessionId);
+                    sessionStorage.setItem('interviewMode', mode);
+                    sessionStorage.setItem('targetRole', targetRole);
+                    sessionStorage.setItem('experienceLevel', experienceLevel);
+
+                    if (mode === 'coding') {
+                        // Coding only → go straight to CodingRoom
+                        startStatus.innerHTML = '<span style="color: #10b981;">Ready! Redirecting to Coding Room...</span>';
+                        setTimeout(() => {
+                            window.location.href = `CodingRoom.html?sessionId=${sessionId}`;
+                        }, 800);
+
+                    } else if (mode === 'both') {
+                        // Both → start with Coding Round first
+                        startStatus.innerHTML = '<span style="color: #10b981;">Ready! Starting with Coding Round...</span>';
+                        setTimeout(() => {
+                            window.location.href = `CodingRoom.html?sessionId=${sessionId}`;
+                        }, 800);
+
+                    } else {
+                        // Voice only → go to InterviewRoom as before
+                        startStatus.innerHTML = '<span style="color: #10b981;">Ready! Redirecting to Interview Room...</span>';
+                        setTimeout(() => {
+                            window.location.href = `InterviewRoom.html?sessionId=${sessionId}`;
+                        }, 800);
+                    }
+
                 } else {
                     startStatus.innerHTML = `<span style="color: #ef4444;">Error: ${data.message}</span>`;
                     startInterviewBtn.disabled = false;

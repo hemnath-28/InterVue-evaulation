@@ -12,26 +12,31 @@ let timeLeft = 30 * 60; // 30 minutes in seconds
 // Used to pick a relevant problem from Code-Judger's problem list
 // ─────────────────────────────────────────────────────────────────────────────
 const ROLE_TOPIC_MAP = {
-    "Frontend Developer":          ["Arrays", "Strings", "Recursion", "Sorting"],
-    "Backend Developer":           ["Graphs", "Trees", "Hashing", "Sorting", "Greedy"],
-    "Full Stack Developer":        ["Arrays", "Strings", "Trees", "Hashing"],
-    "Software Engineer":           ["Dynamic Programming", "Graphs", "Trees", "Sorting"],
-    "Node.js Developer":           ["Graphs", "Hashing", "Strings", "Queues"],
-    "React Developer":             ["Arrays", "Strings", "Recursion"],
-    "Mobile App Developer":        ["Arrays", "Trees", "Graphs"],
-    "iOS Developer":               ["Arrays", "Strings", "Trees"],
-    "Android Developer":           ["Arrays", "Graphs", "Dynamic Programming"],
-    "AI Engineer":                 ["Dynamic Programming", "Math", "Graphs"],
-    "Machine Learning Engineer":   ["Math", "Arrays", "Dynamic Programming"],
-    "Data Engineer":               ["Graphs", "Sorting", "Hashing"],
-    "Data Scientist":              ["Math", "Dynamic Programming", "Sorting"],
-    "DevOps Engineer":             ["Graphs", "Trees", "Strings"],
-    "Cloud Engineer":              ["Graphs", "Greedy", "Sorting"],
-    "Security Engineer":           ["Bit Manipulation", "Strings", "Hashing"],
-    "Cybersecurity Analyst":       ["Strings", "Hashing", "Bit Manipulation"],
-    "QA Automation Engineer":      ["Arrays", "Strings", "Recursion"],
-    "QA/Test Automation Engineer": ["Arrays", "Strings", "Recursion"],
-    "Embedded Systems Engineer":   ["Bit Manipulation", "Arrays", "Math"],
+    // Topics must exactly match what's stored in Code-Judger's DB:
+    // Arrays, Strings, Hash Maps, Hash Tables, Two Pointers, Sliding Window,
+    // Binary Search, Linked Lists, Stack, Stacks, Queue, Queues,
+    // Trees, Binary Trees, Binary Search Trees, Heaps, Matrix,
+    // Priority Queues, Graphs, Dynamic Programming, Math
+    "Frontend Developer":          ["Arrays", "Strings", "Stacks", "Queues"],
+    "Backend Developer":           ["Binary Trees", "Binary Search Trees", "Hash Tables", "Linked Lists"],
+    "Full Stack Developer":        ["Arrays", "Strings", "Binary Trees", "Hash Tables"],
+    "Software Engineer":           ["Arrays", "Binary Trees", "Binary Search Trees", "Heaps"],
+    "Node.js Developer":           ["Hash Tables", "Hash Maps", "Strings", "Queues"],
+    "React Developer":             ["Arrays", "Strings", "Two Pointers"],
+    "Mobile App Developer":        ["Arrays", "Binary Trees", "Matrix"],
+    "iOS Developer":               ["Arrays", "Strings", "Binary Trees"],
+    "Android Developer":           ["Arrays", "Matrix", "Heaps"],
+    "AI Engineer":                 ["Arrays", "Heaps", "Priority Queues"],
+    "Machine Learning Engineer":   ["Arrays", "Matrix", "Heaps"],
+    "Data Engineer":               ["Hash Tables", "Hash Maps", "Arrays", "Linked Lists"],
+    "Data Scientist":              ["Arrays", "Matrix", "Heaps"],
+    "DevOps Engineer":             ["Binary Trees", "Stacks", "Strings"],
+    "Cloud Engineer":              ["Arrays", "Strings", "Sliding Window"],
+    "Security Engineer":           ["Strings", "Hash Tables", "Hash Maps"],
+    "Cybersecurity Analyst":       ["Strings", "Hash Maps", "Hash Tables"],
+    "QA Automation Engineer":      ["Arrays", "Strings", "Two Pointers"],
+    "QA/Test Automation Engineer": ["Arrays", "Strings", "Two Pointers"],
+    "Embedded Systems Engineer":   ["Arrays", "Matrix", "Stacks"],
     "UI/UX Designer":              ["Arrays", "Strings"]
 };
 
@@ -260,29 +265,45 @@ function renderTestResults(results) {
 async function pollSubmissionStatus(submissionId, statusEl, maxWaitMs = 30000) {
     const pollInterval = 1500; // poll every 1.5s
     const deadline     = Date.now() + maxWaitMs;
+    let failureCount   = 0;
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
         const interval = setInterval(async () => {
             try {
                 const res  = await fetch(`/api/code/submissions/status/${submissionId}`, {
                     credentials: 'include'
                 });
+                
+                if (!res.ok) {
+                    throw new Error('Failed to fetch status');
+                }
+                
                 const data = await res.json();
+                failureCount = 0; // reset on success
 
                 if (data.status === 'Completed') {
+                    // Worker finished successfully
                     clearInterval(interval);
                     resolve(data.result || {});
+                } else if (data.status === 'Failed') {
+                    // Worker finished but with a runtime/judging error — still resolve
+                    // so the UI can show the failure verdict instead of hanging forever
+                    clearInterval(interval);
+                    resolve(data.result || { verdict: 'Runtime Error', passed: 0, total: 0 });
                 } else if (Date.now() >= deadline) {
                     clearInterval(interval);
-                    statusEl.textContent = '⚠️ Judging timed out.';
-                    resolve({});
+                    reject(new Error('Judging timed out.'));
                 } else {
                     statusEl.textContent = `⏳ Judging... (${data.status})`;
                 }
-            } catch {
-                if (Date.now() >= deadline) {
+            } catch (err) {
+                failureCount++;
+                if (failureCount >= 3) {
                     clearInterval(interval);
-                    resolve({});
+                    reject(new Error('Lost connection to judging server.'));
+                } else if (Date.now() >= deadline) {
+                    clearInterval(interval);
+                    reject(new Error('Judging timed out.'));
                 }
             }
         }, pollInterval);
@@ -369,6 +390,12 @@ async function submitCode(timedOut = false) {
         submitBtn.disabled = false;
         runBtn.disabled    = false;
         submitBtn.textContent = 'Submit';
+        
+        // Restart the timer since they are still working
+        if (!timedOut) {
+            startTimer();
+        }
+        
         return; // Don't show completion screen — let user retry
     }
 

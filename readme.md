@@ -1,130 +1,138 @@
-# 🎙️ Intervue | AI-Powered Mock Interview Platform
+# 🎙️ Intervue | Modern AI Career Platform & Mock Interview Arena
 
-Intervue is a cutting-edge, end-to-end AI mock interview system designed to help candidates prepare for technical and behavioral interviews. By leveraging state-of-the-art Large Language Models (LLMs) and Speech APIs, Intervue provides a realistic, real-time interview experience with holistic feedback.
-
----
-
-## 🚀 Key Features
-
-- **📄 Intelligent Resume Parsing**: Upload your PDF resume; parsed via **Affinda** and restructured into a clean schema by **Gemini 1.5 Flash**.
-- **🤖 Dynamic Question Generation**: AI analyzes your specific skills, experience, and projects to generate 8-9 tailored interview questions across multiple rounds (Technical, Behavioral, Project-based).
-- **🗣️ Real-time Bidirectional Voice**: 
-    - **AI Voice**: Questions are read aloud using **Deepgram Aura TTS** (high-fidelity, low-latency).
-    - **Candidate Voice**: Speak your answers directly in the browser via **Web Speech API** (SpeechRecognition) with live transcriptions.
-- **📊 Holistic Evaluation**: After the interview, **Groq (LLaMA 3.3 70B)** analyzes the entire transcript to provide a total score (out of 10), detailed feedback for each answer, and areas for improvement.
-- **👤 Premium Dashboard**: View your interview history, overall scores, and deep-dive into AI evaluations for every past session.
-- **🔐 Secure Auth**: Multi-provider authentication (Local, Google, GitHub) via **Passport.js**.
+Intervue is a premium, end-to-end **AI Career Copilot Suite** designed to prepare candidates for hiring pipelines. It is not just an ATS resume parser, but a comprehensive platform that helps users evaluate resume performance, identify skill gaps, experience realistic audio-driven mock interviews, and receive real-time granular feedback.
 
 ---
 
-## 🛠️ Tech Stack
+## 🚀 Core Features
 
-| Layer | Technologies |
-|---|---|
-| **Frontend** | Vanilla HTML5, JavaScript (ES6+), Tailwind CSS |
-| **Backend** | Node.js, Express.js |
-| **Database** | MongoDB (Mongoose) |
-| **Real-time** | Socket.io |
-| **AI Evaluation** | Groq (LLaMA 3.3 70B), Google Gemini 1.5 Flash |
-| **Speech** | Deepgram Aura (TTS), Web Speech API (STT) |
-| **Resume Parsing** | Affinda API |
+### 1. 📄 ATS Resume Analyzer & Optimizer
+* **Detailed Match Report**: Compares uploaded resumes against specific target job roles to calculate matching percentages for keywords, skills, experience, and formatting.
+* **Skill Gap Identification**: Detects missing critical keywords (e.g., Docker, Kubernetes, CI/CD) and offers suggestions for measurable improvements.
+* **Strengths & Feedback**: Outlines key candidate strengths (e.g., "Strong React Skills", "REST API experience") and practical suggestions to bypass applicant tracking filters.
+* **Interface**: Beautifully structured layout via [ATS.html](file:///c:/Users/Administrator/OneDrive/Desktop/FC%20PROJECTS/Intervue/Frontend/ATS.html) powered by [ats.js](file:///c:/Users/Administrator/OneDrive/Desktop/FC%20PROJECTS/Intervue/Frontend/ats.js).
+
+### 2. 🏟️ AI Mock Interview Arena
+* **Immersive Interviews**: Simulate real interview panels for various target roles (e.g., Frontend Developer, Full Stack Engineer) and experience levels (Junior, Mid, Senior).
+* **State-of-the-Art Generators**: Leverages Google's latest `gemini-3.5-flash` model in [interviewService.js](file:///c:/Users/Administrator/OneDrive/Desktop/FC%20PROJECTS/Intervue/Backend/src/services/interviewService.js) to dynamically generate context-aware questions from the candidate's resume and job criteria.
+* **Setup UI**: Built using [Interview.html](file:///c:/Users/Administrator/OneDrive/Desktop/FC%20PROJECTS/Intervue/Frontend/Interview.html) and conducted inside [InterviewRoom.html](file:///c:/Users/Administrator/OneDrive/Desktop/FC%20PROJECTS/Intervue/Frontend/InterviewRoom.html).
+
+### 3. 🗣️ Real-time Audio-Driven Conversational Loop
+* **Natural Text-to-Speech**: AI questions are spoken aloud using **Deepgram Aura TTS** for high-fidelity, ultra-low-latency conversation.
+* **Hands-free Speech-to-Text**: Candidate answers are captured directly through the browser using the **Web Speech API** (`SpeechRecognition`), showing a live transcript as they speak.
+* **Fluid Exchange**: Conducted in real-time over persistent websocket connections powered by `Socket.io`.
+
+### 4. 📊 Post-Interview Evaluation & Analytics
+* **Holistic Scorecards**: Computes a total score out of 10, complete with clear metrics.
+* **Granular Breakdown**: Reviews every single question with a side-by-side view showing the candidate's transcript, positive key points mentioned, missing points, and sample high-scoring answers.
+* **Results UI**: Rendered beautifully in [Dashboard.html](file:///c:/Users/Administrator/OneDrive/Desktop/FC%20PROJECTS/Intervue/Frontend/Dashboard.html).
+
+### 5. 🔐 Custom JWT Authentication
+* **Stateful-free Security**: Replaced legacy session cookies with **custom JWT token authentication** using rotated access and refresh tokens.
+* **Auto-rotation**: Access tokens are kept short-lived (15 minutes), and transparently rotated in the background via HttpOnly cookies using long-lived refresh tokens (7 days) without logging the user out.
+* **Route Protection**: Administered globally via [authMiddleware.js](file:///c:/Users/Administrator/OneDrive/Desktop/FC%20PROJECTS/Intervue/Backend/src/middleware/authMiddleware.js).
 
 ---
 
-## 📁 Project Structure
+## 🛠️ Technology Stack
+
+| Layer | Technology | Description |
+|---|---|---|
+| **Frontend** | Vanilla JS (ES6+), Tailwind CSS, HTML5 | Modern SaaS aesthetic on [index.html](file:///c:/Users/Administrator/OneDrive/Desktop/FC%20PROJECTS/Intervue/Frontend/index.html) with HSL color systems, card styling, and custom typography. |
+| **Backend** | Node.js, Express.js | Core API router and business logic handling. |
+| **Database** | MongoDB (Mongoose) | Holds collections for User accounts, parsed Resume objects, and Interview Sessions. |
+| **WebSockets** | Socket.io | Manages the live state of the Interview Room. |
+| **AI LLM Engine** | Google Gemini SDK (`@google/genai`) | Drives resume parsing, question generation, and score calculations using `gemini-3.5-flash`. |
+| **Speech Services** | Deepgram Aura API & Web Speech API | Provides voice integration for natural dialogue exchange. |
+
+---
+
+## 🔄 Core Application Workflow
+
+```mermaid
+graph TD
+    A[index.html - Login/Signup] -->|Auth Cookie Set| B[Profile.html - Dashboard]
+    B -->|Upload Resume| C[Affinda Parser + Gemini Extraction]
+    C -->|Extract Skills & Exp| D[Save Resume to DB]
+    
+    B -->|Start Preparation| E[ATS.html - Score & Matcher]
+    E -->|Show Gaps & Tips| B
+    
+    B -->|Enter Arena| F[Interview.html - Setup Settings]
+    F -->|Generate Questions via Gemini 3.5| G[InterviewRoom.html - Live Arena]
+    
+    subgraph "Real-Time WebSocket Session"
+        G -->|Trigger Text| H[Deepgram Aura TTS -> Speaks Question]
+        H -->|Speech Input| I[Browser Web Speech API -> STT transcription]
+        I -->|Socket Emit| J[Save Answer Transcript]
+    end
+    
+    J -->|Interview Finished| K[Calculate Evaluation via Gemini]
+    K -->|Redirect| L[Dashboard.html - In-depth Evaluation Metrics]
+    L -->|Review scores & correct answers| B
+```
+
+---
+
+## 📁 Repository Structure
 
 ```plaintext
 Intervue/
 ├── Backend/
 │   ├── src/
-│   │   ├── config/         # Passport, Socket.io, DB configs
-│   │   ├── controllers/    # Business logic (Auth, Interview, Resume)
-│   │   ├── models/         # Mongoose Schemas (User, Resume, Session)
-│   │   ├── routes/         # Express API endpoints
-│   │   ├── services/       # External API integrations (Gemini, Deepgram, Groq)
-│   │   ├── sockets/        # Real-time interview event handlers
-│   │   └── server.js       # Entry point
-├── Frontend/               # Pure HTML/JS/CSS assets
-│   ├── index.html          # Landing Page / Login
-│   ├── Profile.html        # User Dashboard & Resume History
-│   ├── Interview.html      # Session Setup (Role/Experience selection)
-│   ├── InterviewRoom.html  # Live Interview Interface
-│   └── Dashboard.html      # Post-Interview AI Results
-└── readme.md
+│   │   ├── config/         # Database and web socket setup
+│   │   ├── controllers/    # Request handlers (Auth, ATS, Resume, Interview)
+│   │   ├── middleware/     # Custom guards (JWT cookie parser and token rotator)
+│   │   ├── models/         # MongoDB Mongoose schemas (User, Resume, Session)
+│   │   ├── routes/         # REST API endpoints (Auth, Resume, Interview, Submissions)
+│   │   ├── services/       # Integration layers (Gemini SDK, Deepgram, Groq)
+│   │   ├── sockets/        # Socket handlers for running mock interviews
+│   │   └── server.js       # App entry point
+│   └── package.json
+├── Frontend/               # Premium Light-Theme UI Assets
+│   ├── index.html          # Dynamic SaaS Landing Page
+│   ├── ATS.html            # ATS Resume Diagnostic Tool
+│   ├── Interview.html      # Target Role & Level Setup Form
+│   ├── InterviewRoom.html  # Live Audio Mock Interview Suite
+│   ├── Profile.html        # User Dashboard & Session History
+│   ├── Dashboard.html      # Holistic evaluation dashboard
+│   ├── Profile.js          # Handles profile details and session listings
+│   └── index.css           # Custom styling tokens
+└── readme.md               # Project documentation
 ```
 
 ---
 
-## ⚙️ Setup & Installation
+## ⚙️ Quick Setup & Installation
 
-### 1. Clone the repository
+### 1. Clone & Initialize
 ```bash
-git clone <repo-url>
+git clone <repository-url>
 cd Intervue
 ```
 
-### 2. Install Dependencies
+### 2. Configure Environment variables
+Navigate to the `Backend` directory and create a `.env` file:
+```env
+PORT=3000
+MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/intervue
+ACCESS_TOKEN_SECRET=your_jwt_access_secret_key_here
+REFRESH_TOKEN_SECRET=your_jwt_refresh_secret_key_here
+
+# Google Gemini API
+GEMINI_API_KEY=AIzaSy...
+
+# Deepgram Aura (TTS)
+DEEPGRAM_API_KEY=your_deepgram_api_key_here
+
+
+
+### 3. Launch Development Server
+Instantly start the application using `npm run dev`:
 ```bash
 cd Backend
 npm install
-```
-
-### 3. Environment Variables
-Create a `.env` file in the `Backend` directory:
-```env
-PORT=3000
-MONGO_URI=your_mongodb_connection_string
-secretKey=your_session_secret
-
-# AI APIs
-GEMINI_API_KEY=your_google_gemini_key
-GROQ_API_KEY=your_groq_llama_key
-DEEPGRAM_API_KEY=your_deepgram_key
-
-# Resume Parsing
-AFFINDA_API_KEY=your_affinda_key
-AFFINDA_WORKSPACE=your_workspace_id
-
-# OAuth (Optional)
-GOOGLE_CLIENT_ID=...
-GOOGLE_CLIENT_SECRET=...
-GITHUB_CLIENT_ID=...
-GITHUB_CLIENT_SECRET=...
-```
-
-### 4. Run the Application
-```bash
 npm run dev
 ```
-Open **http://localhost:3000** in your browser (Chrome/Edge recommended for Speech API support).
-
----
-
-## 🔄 Workflow Tree
-
-```mermaid
-graph TD
-    A[User Login] --> B[Profile Page]
-    B --> C[Upload Resume]
-    C --> D[Affinda Parsing + Gemini Restructuring]
-    D --> E[Structured Resume Stored]
-    E --> F[Interview Setup]
-    F --> G[Generate Questions via Gemini]
-    G --> H[Interview Room]
-    
-    subgraph "Real-Time Interview Loop (Socket.io)"
-        H --> I[AI Speaks Question - Deepgram TTS]
-        I --> J[User Speaks Answer - Web Speech STT]
-        J --> K[Submit Answer & Load Next]
-    end
-    
-    K --> L[Interview Complete]
-    L --> M[Holistic Evaluation - Groq/LLaMA 3.3]
-    M --> N[Results Dashboard]
-    N --> O[View Total Score & Feedback]
-```
-
----
-
-## 👨‍💻 Author
-Built with a focus on real-time AI systems and premium user experience.
+Once initialized, navigate to **`http://localhost:3000`** in your browser.
+*(Chrome/Edge recommended for full Web Speech API compatibility)*.

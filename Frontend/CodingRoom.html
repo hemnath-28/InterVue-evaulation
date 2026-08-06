@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Intervue | Coding Round</title>
+  <meta name="description" content="AI-powered coding challenge for your mock interview." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            primary: '#2563eb',
+            primaryHover: '#1d4ed8',
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Monaco Editor -->
+  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
+  <style>
+    #editorContainer { height: 400px; border-radius: 0.75rem; overflow: hidden; border: 1px solid #e5e7eb; }
+    .test-pass { color: #10b981; }
+    .test-fail { color: #ef4444; }
+
+    /* Completion overlay animation */
+    #completionOverlay { transition: opacity 0.4s ease; }
+
+    /* Difficulty badge colors */
+    .badge-Easy   { background: #d1fae5; color: #065f46; }
+    .badge-Medium { background: #fef3c7; color: #92400e; }
+    .badge-Hard   { background: #fee2e2; color: #991b1b; }
+  </style>
+</head>
+<body class="bg-gray-950 text-gray-100 font-sans min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-gray-900 border-b border-gray-800 px-6 py-3 flex items-center justify-between sticky top-0 z-50">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center font-bold text-sm">IV</div>
+      <span class="font-semibold text-white">Coding Round</span>
+      <span id="roleBadge" class="text-xs bg-gray-800 text-gray-400 px-2 py-0.5 rounded-full ml-1"></span>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <!-- Timer -->
+      <div class="flex items-center gap-2 bg-gray-800 px-3 py-1.5 rounded-lg">
+        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span id="timer" class="font-mono text-sm font-semibold text-amber-400">30:00</span>
+      </div>
+
+      <!-- Language Selector -->
+      <select id="languageSelect" class="bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-1.5 focus:ring-primary focus:border-primary">
+        <option value="python" selected>Python</option>
+        <option value="java">Java</option>
+        <option value="cpp">C++</option>
+      </select>
+    </div>
+  </header>
+
+  <!-- Loading State -->
+  <div id="loadingState" class="flex-grow flex flex-col items-center justify-center gap-4">
+    <svg class="animate-spin h-10 w-10 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+    <p class="text-gray-400 font-medium">Loading your challenge...</p>
+  </div>
+
+  <!-- Main Layout (hidden until loaded) -->
+  <div id="mainLayout" class="hidden flex-grow flex overflow-hidden" style="height: calc(100vh - 57px);">
+
+    <!-- LEFT: Problem Panel -->
+    <div class="w-2/5 bg-gray-900 border-r border-gray-800 overflow-y-auto flex-shrink-0 p-6 space-y-5">
+
+      <div class="flex items-center gap-3 flex-wrap">
+        <h1 id="problemTitle" class="text-xl font-bold text-white"></h1>
+        <span id="difficultyBadge" class="text-xs font-bold px-2.5 py-1 rounded-full"></span>
+      </div>
+
+      <div>
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Description</p>
+        <p id="problemDescription" class="text-gray-300 text-sm leading-relaxed"></p>
+      </div>
+
+      <div id="examplesSection">
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Examples</p>
+        <div id="examplesList" class="space-y-3"></div>
+      </div>
+
+      <div id="constraintsSection">
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Constraints</p>
+        <ul id="constraintsList" class="list-disc list-inside text-gray-400 text-sm space-y-1 font-mono"></ul>
+      </div>
+
+      <div id="tagsSection">
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Tags</p>
+        <div id="tagsList" class="flex flex-wrap gap-2"></div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: Editor + Results Panel -->
+    <div class="flex-grow flex flex-col bg-gray-950">
+
+      <!-- Editor -->
+      <div class="flex-grow p-4 pb-2">
+        <div id="editorContainer"></div>
+      </div>
+
+      <!-- Test Results -->
+      <div id="testResults" class="hidden mx-4 mb-2 bg-gray-900 rounded-xl border border-gray-800 p-4">
+        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Test Results</p>
+        <div id="testResultsList" class="space-y-2 text-sm font-mono max-h-36 overflow-y-auto"></div>
+      </div>
+
+      <!-- Action Bar -->
+      <div class="px-4 pb-4 flex items-center justify-between gap-3 border-t border-gray-800 pt-3">
+        <div id="submissionStatus" class="text-sm text-gray-400 font-medium"></div>
+        <div class="flex gap-3">
+          <button id="runBtn" class="flex items-center gap-2 px-5 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 font-semibold rounded-xl text-sm transition-colors border border-gray-700">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Run Tests
+          </button>
+          <button id="submitBtn" class="flex items-center gap-2 px-6 py-2 bg-primary hover:bg-primaryHover text-white font-semibold rounded-xl text-sm transition-colors shadow-md">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            Submit
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Completion Overlay -->
+  <div id="completionOverlay" class="hidden fixed inset-0 bg-gray-950/90 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+    <div class="bg-gray-900 border border-gray-700 rounded-3xl p-10 max-w-md w-full text-center shadow-2xl">
+      <div id="completionIcon" class="text-6xl mb-4">🎉</div>
+      <h2 class="text-3xl font-extrabold text-white mb-2">Coding Round Complete!</h2>
+      <p id="completionScore" class="text-5xl font-black text-primary my-4">--/10</p>
+      <p id="completionDetail" class="text-gray-400 text-sm mb-8"></p>
+
+      <div id="completionActions" class="flex flex-col gap-3">
+        <!-- Buttons injected by JS based on mode -->
+      </div>
+    </div>
+  </div>
+
+  <script src="CodingRoom.js"></script>
+</body>
+</html>

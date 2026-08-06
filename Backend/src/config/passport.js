@@ -19,33 +19,33 @@ module.exports = function(passport) {
                 return done(null, false, { message: 'Please login using your OAuth provider.' });
             }
             
-            // Compare passwords
+            // Compare passwords with bcrypt hashing
             const isMatch = await bcrypt.compare(password, user.password);
             if (!isMatch) {
                 return done(null, false, { message: 'Invalid credentials' });
             }
             
-            // Success
+            // Success returning user Profile
             return done(null, user);
         } catch (err) {
             return done(err);
         }
     }));
 
-    // 2. Google OAuth Strategy
+    //  Google OAuth Strategy
     passport.use(new GoogleStrategy({
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
         callbackURL: process.env.GOOGLE_CALLBACK_URL    
     }, async function(accessToken, refreshToken, profile, done) {
         try {
-            // Check if user exists by email
+            // Check if user exists by already exists by that email
             let user = await User.findOne({ email: profile.emails[0].value });
             if (user) {
-                // If the user exists, log them in (could link accounts here if needed)
+                // If the user exists,log them in 
                 return done(null, user);
             } else {
-                // Create a new user
+                // Create a new user if it doesnt exist
                 user = await User.create({
                     name: profile.displayName || "Google User",
                     email: profile.emails[0].value,
@@ -69,10 +69,11 @@ module.exports = function(passport) {
         try {
             // GitHub might not return email if private, but 'user:email' scope tries.
             // Provide a fallback email if it doesn't exist.
-            const email = (profile.emails && profile.emails.length > 0) ? profile.emails[0].value : `${profile.username}@github.com`;
-            
-            // Check if user exists by email
-            let user = await User.findOne({ email: email });
+            const githubId = profile.id;
+
+            console.log("passport Github return json",profile)
+            // Check if user exists by githubId
+            let user = await User.findOne({ githubId: githubId });
             if (user) {
                 return done(null, user);
             } else {
