@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        initSocket();
+        await initSocket();
 
     } catch (err) {
         console.error("Failed to load interview session:", err);
@@ -101,8 +101,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         errorMsg.textContent = msg;
     }
 
+    async function ensureSocketIoLoaded() {
+        if (typeof io !== 'undefined') return;
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js';
+            script.onload = () => resolve();
+            script.onerror = () => reject(new Error('Failed to load Socket.IO library from CDN.'));
+            document.head.appendChild(script);
+        });
+    }
+
     // 3. Initialize Socket.IO
-    function initSocket() {
+    async function initSocket() {
+        try {
+            await ensureSocketIoLoaded();
+        } catch (e) {
+            showError("Socket.IO client library failed to load. Please check your internet connection.");
+            return;
+        }
+
         // Connect to backend /interview namespace with credentials
         socket = io(`${API_BASE_URL}/interview`, { 
             withCredentials: true,
