@@ -104,7 +104,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 3. Initialize Socket.IO
     function initSocket() {
         // Connect to backend /interview namespace with credentials
-        socket = io(`${API_BASE_URL}/interview`, { withCredentials: true });
+        socket = io(`${API_BASE_URL}/interview`, { 
+            withCredentials: true,
+            transports: ['websocket', 'polling']
+        });
 
         socket.on('connect', () => {
             sessionStatus.innerHTML = `

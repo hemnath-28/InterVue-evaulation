@@ -8,13 +8,12 @@ const initSocket = (httpServer) => {
 
     io = new Server(httpServer, {
         cors: {
-            origin: (origin, callback) => {
-                if (!origin || origin === FRONTEND_URL || origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1')) {
-                    callback(null, true);
-                } else {
-                    callback(null, true);
-                }
-            },
+            origin: [
+                FRONTEND_URL,
+                'http://localhost:3000',
+                'http://localhost:5173',
+                'http://127.0.0.1:3000'
+            ],
             methods: ["GET", "POST"],
             credentials: true
         }
