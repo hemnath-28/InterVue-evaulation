@@ -16,13 +16,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // ─── Auth Guard ────────────────────────────────────────────────────────────
     try {
-        const authCheck = await fetch('/api/auth/profile', { credentials: 'include' });
+        const authCheck = await fetch(`${API_BASE_URL}/api/auth/profile`, { credentials: 'include' });
         if (!authCheck.ok) { window.location.href = 'login.html'; return; }
     } catch { window.location.href = 'login.html'; return; }
 
     // ─── Fetch Session Results ─────────────────────────────────────────────────
     try {
-        const response = await fetch(`/api/interviews/${sessionId}/results`, {
+        const response = await fetch(`${API_BASE_URL}/api/interviews/${sessionId}/results`, {
             headers: { 'Accept': 'application/json' },
             credentials: 'include'
         });

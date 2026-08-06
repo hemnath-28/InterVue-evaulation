@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // ─── Auth Guard ───────────────────────────────────────────────────────────
     try {
-        const res = await fetch('/api/auth/profile', { credentials: 'include' });
+        const res = await fetch(`${API_BASE_URL}/api/auth/profile`, { credentials: 'include' });
         if (!res.ok) {
             window.location.href = 'login.html';
             return;
@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         statusMessage.innerHTML = '<span class="text-primary font-mono text-xs">UPLOADING DOCUMENT DIRECTIVE...</span>';
 
         try {
-            const response = await fetch('/api/ats/analyze', {
+            const response = await fetch(`${API_BASE_URL}/api/ats/analyze`, {
                 method: 'POST',
                 credentials: 'include',
                 body: formData

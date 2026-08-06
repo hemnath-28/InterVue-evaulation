@@ -18,26 +18,28 @@ UserRoute.post("/login", loginUser);
 // OAUTH ROUTES
 // =======================
 
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://intervue-lime.vercel.app';
+
 // Google
 UserRoute.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 UserRoute.get("/google/callback", passport.authenticate("google", {
-    failureRedirect: "/failed"
+    failureRedirect: `${FRONTEND_URL}/login.html?auth_error=1`
 }), (req, res) => {
     const { generateTokens, setAuthCookies } = require("../utils/jwtHelper");
     const tokens = generateTokens(req.user);
     setAuthCookies(res, tokens);
-    res.redirect("/Profile.html");
+    res.redirect(`${FRONTEND_URL}/Profile.html`);
 });
 
 // Github
 UserRoute.get("/github", passport.authenticate("github", { scope: ["user:email"] }));
 UserRoute.get("/github/callback", passport.authenticate("github", {
-    failureRedirect: "/failed"
+    failureRedirect: `${FRONTEND_URL}/login.html?auth_error=1`
 }), (req, res) => {
     const { generateTokens, setAuthCookies } = require("../utils/jwtHelper");
     const tokens = generateTokens(req.user);
     setAuthCookies(res, tokens);
-    res.redirect("/Profile.html");
+    res.redirect(`${FRONTEND_URL}/Profile.html`);
 });
 
 // =======================
@@ -52,7 +54,7 @@ UserRoute.get("/logout", (req, res, next) => {
     const { clearAuthCookies } = require("../utils/jwtHelper");
     clearAuthCookies(res);
     req.logout((err) => {
-        res.redirect('/');
+        res.redirect(`${FRONTEND_URL}/login.html`);
     });
 });
 

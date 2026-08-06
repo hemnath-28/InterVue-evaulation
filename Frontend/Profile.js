@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ─── Auth Guard ───────────────────────────────────────────────────────────
     let profileData;
     try {
-        const res = await fetch('/api/auth/profile', { credentials: 'include' });
+        const res = await fetch(`${API_BASE_URL}/api/auth/profile`, { credentials: 'include' });
         if (!res.ok) {
             window.location.href = 'login.html';
             return;

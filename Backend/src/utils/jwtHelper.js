@@ -13,19 +13,21 @@ const generateTokens = (user) => {
 };
 
 const setAuthCookies = (res, tokens) => {
+    const isProd = process.env.NODE_ENV === "production";
+    
     // Access Token Cookie (15 mins)
     res.cookie("accessToken", tokens.accessToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        secure: isProd,
+        sameSite: isProd ? "none" : "lax",
         maxAge: 15 * 60 * 1000 // 15 minutes
     });
 
     // Refresh Token Cookie (7 days)
     res.cookie("refreshToken", tokens.refreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        secure: isProd,
+        sameSite: isProd ? "none" : "lax",
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
 };

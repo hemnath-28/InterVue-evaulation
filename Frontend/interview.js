@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
         uploadStatus.innerHTML = '<span style="color: #3b82f6;">Uploading and parsing document with AI... Please wait.</span>';
 
         try {
-            const response = await fetch('/api/resume/upload', {
+            const response = await fetch(`${API_BASE_URL}/api/resume/upload`, {
                 method: 'POST',
                 // Important to include credentials to send the session cookie
                 credentials: 'include',
@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // This assumes there is an endpoint like GET /api/auth/profile that populates resumes
     async function loadUserResumes() {
         try {
-            const response = await fetch('/api/auth/profile', { credentials: 'include' });
+            const response = await fetch(`${API_BASE_URL}/api/auth/profile`, { credentials: 'include' });
             if (response.ok) {
                 const data = await response.json();
                 if (data.user && data.user.resumes && data.user.resumes.length > 0) {
@@ -173,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
             startStatus.innerHTML = '<span style="color: #3b82f6;">Generating AI Interview Questions...</span>';
 
             try {
-                const response = await fetch('/api/interviews/generate', {
+                const response = await fetch(`${API_BASE_URL}/api/interviews/generate`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',

@@ -134,6 +134,7 @@
     </div>
   </div>
 
+  <script src="config.js"></script>
   <script>
     function switchTab(tab) {
       const btnLogin = document.getElementById('btn-login');
@@ -158,14 +159,23 @@
       }
     }
 
-    // ─── Show auth error banner if redirected from a protected page ───────────
+    // ─── Dynamic API URLs & Auth error banner ───────────
     document.addEventListener('DOMContentLoaded', () => {
+      const loginForm = document.querySelector('#section-login form');
+      const signupForm = document.querySelector('#section-signup form');
+      const googleBtn = document.querySelector('a[href*="/api/auth/google"]');
+      const githubBtn = document.querySelector('a[href*="/api/auth/github"]');
+
+      if (loginForm) loginForm.action = `${API_BASE_URL}/api/auth/login`;
+      if (signupForm) signupForm.action = `${API_BASE_URL}/api/auth/register`;
+      if (googleBtn) googleBtn.href = `${API_BASE_URL}/api/auth/google`;
+      if (githubBtn) githubBtn.href = `${API_BASE_URL}/api/auth/github`;
+
       const params = new URLSearchParams(window.location.search);
       if (params.get('auth_error') === '1') {
         const banner = document.createElement('div');
         banner.className = 'mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 font-medium text-center';
         banner.textContent = 'You must be logged in to access that page. Please sign in below.';
-        // Insert banner before the tab switcher
         const card = document.querySelector('.bg-white.py-8');
         if (card) card.insertBefore(banner, card.firstChild);
       }

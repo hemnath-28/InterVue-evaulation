@@ -4,10 +4,19 @@ const interviewSocket = require("../sockets/interviewSocket");
 let io;
 
 const initSocket = (httpServer) => {
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'https://intervue-lime.vercel.app';
+
     io = new Server(httpServer, {
         cors: {
-            origin: "*", // Adjust this to match your frontend URL in production
-            methods: ["GET", "POST"]
+            origin: (origin, callback) => {
+                if (!origin || origin === FRONTEND_URL || origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1')) {
+                    callback(null, true);
+                } else {
+                    callback(null, true);
+                }
+            },
+            methods: ["GET", "POST"],
+            credentials: true
         }
     });
 

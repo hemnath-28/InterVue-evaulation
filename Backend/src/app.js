@@ -2,10 +2,26 @@ const express = require('express');
 require('dotenv').config();
 const path = require('path');
 const cookieParser = require('cookie-parser');
-const app = express();
 const passport = require('passport');
 const session = require('express-session');
+const cors = require('cors');
 const { createProxyMiddleware } = require('http-proxy-middleware');
+
+const app = express();
+
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://intervue-lime.vercel.app';
+
+// CORS configuration
+app.use(cors({
+    origin: (origin, callback) => {
+        if (!origin || origin === FRONTEND_URL || origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1')) {
+            callback(null, true);
+        } else {
+            callback(null, true);
+        }
+    },
+    credentials: true
+}));
 
 // ─── PROXY: Forward /api/code/* → Code-Judger microservice (port 4000) ───────
 // Must be BEFORE express.json() so the proxy can read the untouched body stream
@@ -34,12 +50,18 @@ app.use(cookieParser());
 // Configure Passport
 require('./config/passport')(passport);
 
+const isProd = process.env.NODE_ENV === 'production';
+
 app.use(session({
-    // ─── FIX: env var is 'secretKey' (capital K) — fall back to a safe default
     secret: process.env.secretKey || process.env.secretkey || 'intervue_session_secret',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false, httpOnly: true, maxAge: 24 * 60 * 60 * 1000 } // 1 day
+    cookie: { 
+        secure: isProd, 
+        sameSite: isProd ? 'none' : 'lax',
+        httpOnly: true, 
+        maxAge: 24 * 60 * 60 * 1000 
+    } // 1 day
 }));
 
 app.use(passport.initialize());
@@ -48,17 +70,16 @@ app.use(passport.session());
 // Serve static frontend files (disable default index.html serving for root)
 const frontendPath = path.join(__dirname, "..", "..", "frontend");
 
-// Route to serve our custom login page
+// Route to serve custom login page
 app.get("/", (req, res) => {
     res.sendFile(path.join(frontendPath, "login.html"));
 });
 
 app.use(express.static(frontendPath, { index: false }));
 
-
-// ─── FIX: Redirect to login.html with an error flag instead of raw HTML ───
+// Redirect failed auth attempts to frontend login page
 app.get("/failed", (req, res) => {
-    res.redirect('/?auth_error=1');
+    res.redirect(`${FRONTEND_URL}/login.html?auth_error=1`);
 });
 
 // Original Home route

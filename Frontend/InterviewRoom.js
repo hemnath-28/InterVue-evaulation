@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ─── FIX #1: Auth Guard ───────────────────────────────────────────────────
     // Check if the user is logged in before anything else.
     try {
-        const authCheck = await fetch('/api/auth/profile', { credentials: 'include' });
+        const authCheck = await fetch(`${API_BASE_URL}/api/auth/profile`, { credentials: 'include' });
         if (!authCheck.ok) {
             window.location.href = 'login.html';
             return;
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 2. Fetch Session Data
     try {
-        const response = await fetch(`/api/interviews/${sessionId}/results`, { 
+        const response = await fetch(`${API_BASE_URL}/api/interviews/${sessionId}/results`, { 
             headers: { 'Accept': 'application/json' },
             credentials: 'include' 
         });
@@ -103,8 +103,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 3. Initialize Socket.IO
     function initSocket() {
-        // ─── FIX #2: Connect to the correct /interview namespace ─────────────
-        socket = io('/interview');
+        // Connect to backend /interview namespace with credentials
+        socket = io(`${API_BASE_URL}/interview`, { withCredentials: true });
 
         socket.on('connect', () => {
             sessionStatus.innerHTML = `
@@ -384,7 +384,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         try {
             // Save answer to DB
-            const saveRes = await fetch(`/api/interviews/${sessionId}/answer`, {
+            const saveRes = await fetch(`${API_BASE_URL}/api/interviews/${sessionId}/answer`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -411,7 +411,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 questionTextEl.textContent = "Interview complete! The AI is evaluating all your answers...";
 
-                await fetch(`/api/interviews/${sessionId}/evaluate`, {
+                await fetch(`${API_BASE_URL}/api/interviews/${sessionId}/evaluate`, {
                     method: 'POST',
                     credentials: 'include'
                 });

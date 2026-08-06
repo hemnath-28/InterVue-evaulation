@@ -191,7 +191,7 @@ async function runTests() {
     try {
         // ✅ Correct endpoint: POST /run/batch
         // Proxied: main backend /api/code/run/batch → Code-Judger /run/batch
-        const response = await fetch('/api/code/run/batch', {
+        const response = await fetch(`${API_BASE_URL}/api/code/run/batch`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
@@ -270,7 +270,7 @@ async function pollSubmissionStatus(submissionId, statusEl, maxWaitMs = 30000) {
     return new Promise((resolve, reject) => {
         const interval = setInterval(async () => {
             try {
-                const res  = await fetch(`/api/code/submissions/status/${submissionId}`, {
+                const res  = await fetch(`${API_BASE_URL}/api/code/submissions/status/${submissionId}`, {
                     credentials: 'include'
                 });
                 
@@ -343,7 +343,7 @@ async function submitCode(timedOut = false) {
 
     try {
         // ✅ Step 1: POST /submit — queues the job, returns submissionId immediately
-        const submitRes = await fetch('/api/code/submit', {
+        const submitRes = await fetch(`${API_BASE_URL}/api/code/submit`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
@@ -401,7 +401,7 @@ async function submitCode(timedOut = false) {
 
     // Save result to InterviewSession regardless of judging outcome
     try {
-        await fetch(`/api/interviews/${sessionId}/coding-result`, {
+        await fetch(`${API_BASE_URL}/api/interviews/${sessionId}/coding-result`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
@@ -485,7 +485,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Auth guard
     try {
-        const auth = await fetch('/api/auth/profile', { credentials: 'include' });
+        const auth = await fetch(`${API_BASE_URL}/api/auth/profile`, { credentials: 'include' });
         if (!auth.ok) { window.location.href = 'login.html'; return; }
     } catch { window.location.href = 'login.html'; return; }
 
@@ -500,7 +500,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // is valid for judging (submit/run/batch) since both share the same DB.
     try {
         // Step 1: Get all published problems from Code-Judger
-        const listRes = await fetch('/api/code/problems', { credentials: 'include' });
+        const listRes = await fetch(`${API_BASE_URL}/api/code/problems`, { credentials: 'include' });
         if (!listRes.ok) throw new Error('Could not fetch problems from Code-Judger.');
         const listData = await listRes.json();
         const allProblems = listData.problems || [];
@@ -525,7 +525,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const picked = matched[Math.floor(Math.random() * matched.length)];
 
         // Step 3: Get full problem details + sampleCases from Code-Judger
-        const detailRes = await fetch(`/api/code/problems/${picked._id}`, { credentials: 'include' });
+        const detailRes = await fetch(`${API_BASE_URL}/api/code/problems/${picked._id}`, { credentials: 'include' });
         if (!detailRes.ok) throw new Error('Could not load problem details.');
         const detailData = await detailRes.json();
 

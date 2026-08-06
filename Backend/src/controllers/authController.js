@@ -26,11 +26,13 @@ const registerUser = async (req, res, next) => {
             provider: 'local'
         });
 
+        const FRONTEND_URL = process.env.FRONTEND_URL || 'https://intervue-lime.vercel.app';
+
         // Set JWT Auth Cookies
         const { generateTokens, setAuthCookies } = require("../utils/jwtHelper");
         const tokens = generateTokens(user);
         setAuthCookies(res, tokens);
-        res.redirect("/Profile.html");
+        res.redirect(`${FRONTEND_URL}/Profile.html`);
 
     } catch (err) {
         res.status(500).json({ message: "Server Error" });
@@ -39,36 +41,37 @@ const registerUser = async (req, res, next) => {
 
 // Login User (Custom JWT handler)
 const loginUser = async (req, res, next) => {
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'https://intervue-lime.vercel.app';
     try {
         const { email, password } = req.body;
 
         if (!email || !password) {
-            return res.redirect("/failed");
+            return res.redirect(`${FRONTEND_URL}/login.html?auth_error=1`);
         }
 
         const user = await User.findOne({ email });
         if (!user) {
-            return res.redirect("/failed");
+            return res.redirect(`${FRONTEND_URL}/login.html?auth_error=1`);
         }
 
         if (user.provider !== 'local' || !user.password) {
-            return res.redirect("/failed");
+            return res.redirect(`${FRONTEND_URL}/login.html?auth_error=1`);
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.redirect("/failed");
+            return res.redirect(`${FRONTEND_URL}/login.html?auth_error=1`);
         }
 
         // Set JWT Auth Cookies
         const { generateTokens, setAuthCookies } = require("../utils/jwtHelper");
         const tokens = generateTokens(user);
         setAuthCookies(res, tokens);
-        res.redirect("/Profile.html");
+        res.redirect(`${FRONTEND_URL}/Profile.html`);
 
     } catch (err) {
         console.error("[Login Error]", err.message);
-        res.redirect("/failed");
+        res.redirect(`${FRONTEND_URL}/login.html?auth_error=1`);
     }
 }
 
